@@ -1,0 +1,9 @@
+<div>
+    <h2>Ledgers</h2>
+    <ul>
+        <li *ngFor="let ledger of ledgers">
+            <strong>{{ ledger.name }}</strong
+            >: {{ ledger.balance | currency }}
+        </li>
+    </ul>
+</div>
