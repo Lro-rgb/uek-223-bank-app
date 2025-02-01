@@ -1,10 +1,10 @@
 export default {
-  admin: {
-    username: '',
-    password: '',
-  },
-  user: {
-    username: '',
-    password: '',
-  }
-}
+    admin: {
+        username: '',
+        password: '',
+    },
+    user: {
+        username: '',
+        password: '',
+    },
+};

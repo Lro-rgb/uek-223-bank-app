@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,13 +10,13 @@ import { Token } from '../../models/token.interface';
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrl: './login.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [CommonModule, FormsModule],
-    providers: [HttpClient],
 })
 export class LoginComponent {
-    username = '';
-    password = '';
-    errorMessage = '';
+    public username = '';
+    public password = '';
+    public errorMessage = '';
 
     constructor(
         private http: HttpClient,
@@ -24,7 +24,7 @@ export class LoginComponent {
         private router: Router,
     ) {}
 
-    onSubmit() {
+    public onSubmit() {
         const loginData = { username: this.username, password: this.password };
 
         this.http.post<Token>('http://localhost:5000/api/v1/Login', loginData).subscribe({
