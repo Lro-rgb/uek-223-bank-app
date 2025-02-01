@@ -4,6 +4,7 @@ import { Ledger } from '../../models/ledger.interface';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
     selector: 'app-ledger',
@@ -12,7 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     imports: [CommonModule, FormsModule],
 })
 export class LedgerComponent implements OnInit {
-    public ledgers: Ledger[] = [];
+    public ledgers$ = new BehaviorSubject<Ledger[]>([]);
     public fromLedgerId: number | null = null;
     public toLedgerId: number | null = null;
     public amount: number | null = null;
@@ -33,7 +34,7 @@ export class LedgerComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (data: Ledger[]) => {
-                    this.ledgers = data;
+                    this.ledgers$.next(data);
                 },
                 error: (error) => {
                     console.error('Error fetching ledgers', error);
