@@ -1,8 +1,9 @@
-# 223-ma-app
+# 223 Bank App
 
-Willkommen beim Ük 223. Dieses Repository enthält den Code für die Applikation, die wir im Modul 223 erstellen werden, sowie die Lerninhalte. 
+Willkommen beim Ük 223! In diesem Repository findest du den Code für die Applikation, die wir im Modul 223 erstellen werden, sowie die Lerninhalte.
 
-Es dient jedoch lediglich als Ablage dieser Informationen. Gewisse Informationen befinden sich auch im Learningview, ebenfalls wird wie gewohnt im Learningview die Dokumentation der Arbeit abgegeben, sowie der Progress dokumentiert.
+Dieses Repository dient als Ablage für die bereitgestellten Informationen. Gewisse Informationen befinden sich auch im LearningView.
+Ebenfalls wird wie gewohnt im LearningView die Dokumentation der Arbeit abgegeben, sowie der Fortschritt dokumentiert.
 
 ## Setup
 
