@@ -20,7 +20,7 @@ Starten Sie den Container mit der MariaDB.
 ### Dev Setup
 
 Holen sie sich das Repo runter, mit dem FE und BE Code.
-Dieses finden sie [hier](https://github.com/GF3R/223-ma-app)
+Dieses finden sie [hier](https://gitlab.ict-learnfactory.net/223/bank-app)
 
 Falls noch nicht installiert, laden Sie sich folgende Tools herunter:
 
