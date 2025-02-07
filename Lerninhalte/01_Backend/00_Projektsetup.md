@@ -37,6 +37,7 @@ Für die Backendentwicklung:
 
 Sonstiges:
 
+- [Datagrip](https://www.jetbrains.com/datagrip/)
 - [Git](https://git-scm.com/)
 
 ### Backend appsettings.json
