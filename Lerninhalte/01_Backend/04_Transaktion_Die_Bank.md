@@ -71,7 +71,7 @@ Ersetze die Funktionen `Book`, `GetAllLedgers` und `GetTotalMoney` im `LedgerRep
             conn.Open();
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
@@ -105,7 +105,7 @@ Ersetze die Funktionen `Book`, `GetAllLedgers` und `GetTotalMoney` im `LedgerRep
             {
                 try
                 {
-                    using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
                     {
                         object result = cmd.ExecuteScalar();
                         if (result != DBNull.Value)
