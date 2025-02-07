@@ -1,110 +1,106 @@
 # Sicherheitsüberlegungen für die Architektur
 
 ## Ausgangslage
-Sie haben mit der L-Bank eine simple Multiuser-Datenbank-Applikation
-entworfen. Allerdings wurden da keine Sicherheitsüberlegungen gemacht.
-In diesem Auftrag soll einleuchtend gezeigt werden, warum es eine Multitier-Architektur braucht.
 
-Nehmen Sie an, Sie haben eine Applikation wie ein icket-Reservationssystem,
-eine Bank, eine Dating-Applikation oder eine Schulverwaltungssoftware. 
-Alle diese Applikationen haben folgende [Epics]() gemeinsam:
+Du hast mit der Bank eine simple Multiuser-Datenbank-Applikation entworfen. Allerdings hast du dabei keine Sicherheitsüberlegungen gemacht. In diesem Auftrag soll einleuchtend gezeigt werden, warum es eine Multitier-Architektur braucht.
 
-- Die Benutzer:innen sollen mit einer grafische Benutzerschnittstelle (GUI) arbeiten können.
-- Alle Benutzer:innen sollen auf die gleiche Datenbasis Zugriff haben
-(«greifen auf die gleiche Datenbank zu»)
-- Die Zugriffe können gleichzeitig erfolgen.
+Nimm an, du entwickelst eine Applikation wie ein Ticket-Reservationssystem, eine Bank, eine Dating-Applikation oder eine Schulverwaltungssoftware. Alle diese Applikationen haben folgende Epics gemeinsam:
+
+- **Grafische Benutzeroberfläche:**  
+  Die Benutzer:innen sollen mit einer grafischen Benutzerschnittstelle (GUI) arbeiten können.
+- **Gemeinsame Datenbasis:**  
+  Alle Benutzer:innen sollen auf dieselbe Datenbasis zugreifen (d.h. sie greifen auf dieselbe Datenbank zu).
+- **Gleichzeitige Zugriffe:**  
+  Die Zugriffe können gleichzeitig erfolgen.
 
 ## Aufgabenstellung
-Bestimmen Sie eine korrekte und vernünftige Architektur.
+
+Bestimme eine korrekte und vernünftige Architektur.
 
 ### Teilaufgabe 1: Hypothese
 
-Laut Aufgabenstellung haben Sie folgende Komponenten:
-- Ein Programm, dass das GUI darstellt.
-- Eine Business-Logik (dort, wo die Aufgaben erledigt werden: Buchungen in einer Konto-Applikation, Absenzen zählen in einer Schulverwaltung,Matches generieren in einer Dating-Applikation. Also dort «wo die Musik
-spielt»).
-- Eine Datenbank.
-- Da Sie eine Datenbank haben, brauchen Sie noch ein Netzwerk
+Laut Aufgabenstellung hast du folgende Komponenten:
 
-Ordnen Sie die Komponenten an, wie Sie denken, es würde Sinn ergeben und
-verbinden Sie diese
+- **GUI:**  
+  Ein Programm, das die Benutzeroberfläche darstellt.
+- **Businesslogik:**  
+  Dort, wo die Aufgaben erledigt werden – z.B. Buchungen in einer Konto-Applikation, Absenzen zählen in einer Schulverwaltung, Matches generieren in einer Dating-Applikation (also dort, wo die Musik spielt).
+- **Datenbank:**  
+  Eine zentrale Datenspeicherung.
+- **Netzwerk:**  
+  Da du eine Datenbank hast, brauchst du auch ein Netzwerk.
 
-GUI (3 Benutzer:innen):
+Ordne die Komponenten so an, wie du denkst, dass es Sinn ergibt, und verbinde sie.
 
-![](2024-11-22-10-57-26.png)
+- **GUI (3 Benutzer:innen):**  
+  ![](2024-11-22-10-57-26.png)
+- **Businesslogik:**  
+  ![](2024-11-22-10-57-39.png)
+- **Datenbank:**  
+  ![](2024-11-22-10-57-46.png)
 
-Business-Logik:
+Es gibt noch eine Entscheidung, die du treffen musst: **Wie verbindest du dich mit der Datenbank?**
 
-![](2024-11-22-10-57-39.png)
+Du hast zwei Möglichkeiten:
 
-Datenbank:
+- **Variante 1:**  
+  Jeder Benutzer verbindet sich mit ein und demselben User auf der Datenbank. Du programmierst die Authentifizierung und Autorisierung selbst.
+- **Variante 2:**  
+  Für jeden Benutzer wird in der Datenbank ein eigener User angelegt. Damit kann die Rechteverwaltung der Datenbank genutzt werden. Grundsätzlich kannst du für Benutzer die Rechte zum Zugriff auf Tabellen (einfügen, löschen, Schema ändern, …) vergeben.
 
-![](2024-11-22-10-57-46.png)
+Beantworte folgende Fragen zu deiner Hypothese:
 
-Es gibt noch eine Entscheidung, die Sie fällen müssen: Wie verbinden Sie sich zur Datenbank?
-
-Sie haben zwei Möglichkeiten:
-
-Variante 1: Jede/r Benutzer:in verbindet sich mit ein und demselben Benutzer auf die Datenbank, Sie programmieren die Authentifizierung und Autorisierung selbst.
-
-Variante 2: Für jede/n Benutzer:in wird in der Datenbank ein eigener User
-angelegt. Damit kann die Rechteverwaltung der Datenbank verwendet werden.
-Grundsätzlich können Sie für BenutzerInnen die Rechte zum Zugriff auf Tabellen (einfügen, löschen, ändern des Schemas, …) geben
-
-Beantworten Sie folgende Fragen zu Ihrer Hypothese:
-- Wie kommen die Daten zur Datenbank?
-- Was befindet sich auf den Rechner der Benutzer:innen?
+- Wie gelangen die Daten in die Datenbank?
+- Was befindet sich auf dem Rechner der Benutzer:innen?
 - Was befindet sich auf einem Server?
-- Welche Variante zur Verbindung haben Sie gewählt? Variante 1 oder 2?
+- Welche Variante zur Verbindung hast du gewählt? Variante 1 oder 2?
 
 ### Teilaufgabe 2: Das Problem
 
-Eine Möglichkeit wäre, ein Programm mit GUI zu programmieren, bei der die
-Businesslogik auch gerade integriert ist, das über das Internet mit der
-Datenbank Verbindung aufnimmt
+Eine Möglichkeit wäre, ein Programm mit GUI zu entwickeln, bei dem die Businesslogik integriert ist und das über das Internet die Datenbankverbindung herstellt.
 
 ![](2024-11-22-10-59-07.png)
 
-Das Problem mit Variante 1:
+#### Das Problem mit Variante 1
 
-Nehmen Sie an, es wird mit Variante 1 gearbeitet: Jede/r Benutzer:in verbindet sich mit ein und demselben Benutzer auf die Datenbank.
+Nimm an, es wird mit Variante 1 gearbeitet:  
+Jeder Benutzer verbindet sich mit ein und demselben User auf der Datenbank.
 
-Der Username und der Benutzer müssen in der GUI-Applikation gespeichert
-werden, sonst kann sie nicht auf die Datenbank zugreifen.
+- Der Username und das Passwort müssen in der GUI-Applikation gespeichert werden, sonst kann sie nicht auf die Datenbank zugreifen.
+- Es besteht die Möglichkeit, aus den exe-Dateien von .NET-Programmen den Quellcode zu extrahieren.  
+  Installiere **dotPeek5**, einen der besten Dekompilierer.
+- Lade das Beispielprogramm **2-Tier-Security-Release** herunter und starte es:  
+  [2-Tier-Security-Release](./Beispielprogramm/2-Tier-Security-Release.zip)
+- Starte dotPeek und öffne die exe-Datei. Du siehst den Quellcode.
+- Wähle:  
+  `2-Tier-Security` → `_2_Tier_Security` → `Form1` → dann `Form1.cs`
 
-Es gibt nun aber die Möglichkeit, aus den «exe»-Dateien von .net-Programmen
-den Quellcode zu gewinnen. Installieren Sie dotPeek5, einer der besten
-Dekompilierer.
+_Fällt dir etwas – für die Betreiber der Applikation – unangenehmes auf? Was ziehst du daraus für Schlüsse?_
 
-Laden Sie das Beispielprogramm 2-Tier-Security-Release herunter
-und starten Sie es. [2-Tier-Security-Release](./Beispielprogramm/2-Tier-Security-Release.zip)
+#### Das Problem mit Variante 2
 
-Starten Sie dotPeek und öffnen Sie die exe-Datei. Sie sehen den Quellcode.
+Nimm an, es wird mit Variante 2 gearbeitet:  
+Für jeden Benutzer wird in der Datenbank ein eigener User angelegt. In der Applikation wird ein Loginfenster angezeigt, und so müssen keine Benutzernamen und Passwörter in der Applikation gespeichert werden.
 
-Wählen Sie «2-Tier-Security», «_2_Tier_Security», «Form1» und dann «Form1.cs»
-
-Fällt Ihnen etwas – für die Betreiber der Applikation – unangenehmes auf?
-Was ziehen Sie daraus für Schlüsse?
-
-Problem mit Variante 2
-
-Nehmen Sie an, es wird mit Variante 2 gearbeitet: Für jede/n Benutzer:in wird in der Datenbank ein eigener User angelegt. In der Applikation wird ein Loginfenster gezeigt und so müssen keine Usernamen und Passworte in der
-Applikation gespeichert werden.
-
-Nun gibt es ein neues Problem. Nehmen Sie an, eine Benutzerin möchte etwas buchen:
-Natürlich darf diese Person nur von ihrem eigenen Konto buchen! Der angelegte Benutzer muss aber das Änderungsrecht auf diese Tabelle haben, sonst kann gar nicht gebucht werden! Natürlich wird das vom GUI verhindert, aber was würden Sie als kreative/r Hacker:in vorschlagen?
-
+Nun gibt es ein neues Problem:  
+Angenommen, eine Benutzerin möchte etwas buchen. Natürlicherweise darf diese Person nur von ihrem eigenen Konto buchen! Der angelegte User muss jedoch das Änderungsrecht auf diese Tabelle besitzen, sonst kann gar nicht gebucht werden.  
+Zwar verhindert das die GUI, aber was würdest du als kreative/r Hacker:in vorschlagen?
 
 ### Teilaufgabe 3: Lösung
 
 ![Die Lösung](image.png)
 
-Frage: Welche Varianten für Username und Passwort sind denkbar?
+Beantworte folgende Fragen:
 
-Wieso haben wir die Probleme bei Variante 1 (jede/r Benutzer:in verbindet sich mit ein und demselben Benutzer auf die Datenbank) nicht?
+- **Varianten für Username und Passwort:**  
+  Welche Varianten für Username und Passwort sind denkbar?
+- **Probleme bei Variante 1:**  
+  Weshalb treten die Probleme bei Variante 1 (jeder Benutzer verbindet sich mit ein und demselben User auf der Datenbank) nicht auf?
+- **Probleme bei Variante 2:**  
+  Weshalb treten die Probleme bei Variante 2 (für jeden Benutzer wird in der Datenbank ein eigener User angelegt) nicht auf?
 
-Wieso haben wir die Probleme bei Variante 2 (für jede/n Benutzer:in wird in der Datenbank ein eigener User angelegt) nicht?
+**Schlechte Nachricht:**  
+Das wird komplex.
 
-Schlechte Nachricht: Das wird komplex.
-
-Gute Nachricht: Sie können Ihr Wissen aus dem Modul «295 Backend für Applikationen realisieren» anwenden.
+**Gute Nachricht:**  
+Du kannst dein Wissen aus dem Modul *295 Backend für Applikationen realisieren* anwenden.
