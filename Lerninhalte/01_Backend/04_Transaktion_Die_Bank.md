@@ -174,4 +174,4 @@ Starte das Programm mehrfach.
 
 Die Ausgabe sollte wie folgt aussehen:
 
-![](cli-transactions.png)
+![](./images/cli-transactions.png)

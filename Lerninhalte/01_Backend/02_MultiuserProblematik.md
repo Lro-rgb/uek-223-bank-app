@@ -32,7 +32,7 @@ umgewandelt werden.
 
 Der Ablauf sollte so aussehen:
 
-![Ablauf Programm](cli-demo.png)
+![Ablauf Programm](./images/cli-demo.png)
 
 Lass das Programm laufen. Verändert sich die Summe des Geldes im
 System? Sollte sie sich verändern?
@@ -42,7 +42,7 @@ System? Sollte sie sich verändern?
 Um mehrere User (multiuser) zu simulieren, starte das Programm mehrfach (mindestens drei Mal).
 Je nach IDE musst du zudem die Build Config anpassen und mehrere parallele Instanzen erlauben, via der checkbox "Allow multiple instances".
 
-![allow multiple instances](multiple-instances.png)
+![allow multiple instances](./images/multiple-instances.png)
 
 Verändert sich sie Summe des Geldes im System? Sollte sie sich verändern?
 

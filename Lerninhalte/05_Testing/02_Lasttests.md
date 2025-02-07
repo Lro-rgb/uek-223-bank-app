@@ -67,7 +67,7 @@ Passe folgende Punkte an:
 
 Wenn du nun das Backend und dieses Programm startest, solltest du eine Ausgabe wie folgt sehen:
 
-![nBomber](nbomber.png)
+![nBomber](./images/nbomber.png)
 
 Ganz unten siehst du einen Abschnitt „Reports saved in …“. In diesem Ordner solltest du eine HTML-Datei mit allen Resultaten finden.
 
@@ -77,7 +77,7 @@ Finde heraus, wie viele Anfragen gestartet wurden und wie lange sie im Durchschn
 
 Frage zu Beginn und am Ende über das API alle Ledgers ab. Vergleiche den Geldbetrag am Ende und gib auf der Konsole aus, ob sich der Geldbetrag geändert hat. Im Idealfall sollte es etwa so aussehen:
 
-![Beispiel mit Money output](nbomber-money-check.png)
+![Beispiel mit Money output](./images/nbomber-money-check.png)
 
 ### Teilaufgabe 4: Testen des Booking APIs
 

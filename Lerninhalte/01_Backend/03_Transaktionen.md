@@ -11,7 +11,7 @@ In dieser Aufgabe werden Transaktionen theoretisch und praktisch erkundet.
 In folgender Tabelle läuft die Zeit von oben nach unten. P0 bis P2 sind unterschiedliche Prozesse (Programme, User, …).  
 a, b, c sind unterschiedliche Datensätze.
 
-![](transaction-theory-1.png)
+![](./images/transaction-theory-1.png)
 
 Gehe davon aus, dass wenn ein Prozess einen Datensatz (a, b oder c) liest und danach schreibt, er damit arbeitet und die Datenbank zu diesem Zeitpunkt inkonsistent ist.  
 Versuche zu identifizieren, wo folgende Probleme auftreten können:
@@ -27,7 +27,7 @@ Welchen Isolationslevel brauchst du, um diese Probleme zu verhindern?
 
 Nimm folgenden Ablauf für die Bank:
 
-![](transaction-theory-2.png)
+![](./images/transaction-theory-2.png)
 
 Versuche zu identifizieren, wo folgende Probleme auftreten können:
 - Dirty Read
@@ -62,7 +62,7 @@ Schreibe statt den Anweisungen nun die SQL-Befehle in die Tabelle.
 - P0 soll 20 von a zu b buchen.
 - P1 soll 30 von b zu a buchen.
 
-![](transaction-theory-3.png)
+![](./images/transaction-theory-3.png)
 
 | Zeit | P0 | P1 | P2 |
 | --- | --- | --- | --- |
@@ -132,7 +132,7 @@ Fällt dir was auf?
 
 Stelle für die ersten beiden SQL-Tabs die Isolation «Serializable» ein und für die dritte Tab «Read Committed» (Lösung aus Aufgabe 2).
 
-![](transaction-settings.png)
+![](./images/transaction-settings.png)
 
 Starte in jedem der drei Tabs eine Transaktion, indem du «BEGIN TRANSACTION;» eingibst und auf «Execute» klickst.
 
