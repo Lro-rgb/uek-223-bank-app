@@ -1,13 +1,16 @@
-# Die L-Bank: Das Problem
+# Die Bank: Das Problem
 
 ## Ausgangslage
-Sie haben das Erstellte Programm der L-Bank zum Laufen gebracht und
-analysiert. In diesem Programm geht es um die Multiuserprobleme.
+
+Du hast das erstellte Programm der Bank zum Laufen gebracht und
+analysiert. In diesem Teil geht es um die Multiuserprobleme.
 
 ### Teilaufgabe 1: Buchungen
+
 Um den Betrieb zu simulieren, soll das Banking-Programm so erweitert werden,
 dass es den Betrieb simuliert und zufällige Buchungen vornimmt.
-Erweitern Sie das Programm so in "Simple.cs" an der Stelle wo
+Erweitere das Programm so in `Simple.cs` an der Stelle wo
+
 ```csharp	
 ////////////////////
 // Your Code Here
@@ -15,47 +18,48 @@ Erweitern Sie das Programm so in "Simple.cs" an der Stelle wo
 ```
 
 steht, dass folgender Ablauf implementiert wird:
+
 1. Ausgabe von «Booking, press ESC to stop.».
-2. Um ein zufälliges Konto auszusuchen, sollte «allLedgers» in ein Array
+2. Um ein zufälliges Konto auszusuchen, sollte `allLedgers` in ein Array
 umgewandelt werden.
-3. Solange nicht «ESC» gedrückt wird1:
-    - «from» soll ein zufälliges Konto sein2.
-    - «to» soll ein zufälliges Konto sein.
-    - «amount» soll ein zufälliger Betrag zwischen 1 und 100 sein.
-    - Ledgers.Book(amount, from, to);
-    - Console.Write(".");
-4. Schreiben Sie einen Zeilenumbruch auf die Konsole.
+3. Solange nicht «ESC» gedrückt wird:
+    - `from` soll ein zufälliges Konto sein.
+    - `to` soll ein zufälliges Konto sein.
+    - `amount` soll ein zufälliger Betrag zwischen 1 und 100 sein.
+    - `Ledgers.Book(amount, from, to);`
+    - `Console.Write(".");`
+4. Einen Zeilenumbruch auf der Konsole am Schluss.
 
 Der Ablauf sollte so aussehen:
 
 ![Ablauf Programm](2024-11-21-09-53-50.png)
 
-Lassen Sie das Programm laufen. Verändert sich sie Summe des Geldes im
+Lass das Programm laufen. Verändert sich die Summe des Geldes im
 System? Sollte sie sich verändern?
 
 ### Teilaufgabe 2: Das erste Problem
-Um mehrere User (multiuser) zu simulieren, starten Sie das Programm
-mehrfach (mindestens drei Mal):
-Klicken Sie mit der rechten Maustaste auf das Projekt und wählen Sie «Debug»,
-«Start Without Debugging».
-Je nach IDE müssen Sie zudem die Build Config anpassen und mehrere parallele Instanzen erlauben, via der checkbox "Allow multiple instances".
 
-![allow multiple instances](image-2.png)
+Um mehrere User (multiuser) zu simulieren, starte das Programm mehrfach (mindestens drei Mal).
+Je nach IDE musst du zudem die Build Config anpassen und mehrere parallele Instanzen erlauben, via der checkbox "Allow multiple instances".
+
+![allow multiple instances](multiple-instances.png)
 
 Verändert sich sie Summe des Geldes im System? Sollte sie sich verändern?
 
-Warum verändert sich die Summe des Geldes? Nehmen Sie an, Sie haben drei
+Warum verändert sich die Summe des Geldes? Nimm an, dass es drei Konten gibt:
+
 Konti («Ledger a» mit 1000, «Ledger b» mit 1000 und «Ledger c» mit 0) und
-lassen das Programm zweimal laufen («Instanz 1» und «Instanz 2»).
+lass das Programm zweimal laufen («Instanz 1» und «Instanz 2»).
 
 Vorüberlegung: Wenn das eine Programm «Instanz a» die Daten in der
 Datenbank ändert, ändern sie sich dann in den Ledger-Objekten des zweiten
 gestarteten Programmes «Instanz b»?
 
-Füllen Sie die Daten zu folgendem Ablauf aus (exakt so, wie es das Programm
+Fülle die Daten zu folgendem Ablauf aus (exakt so, wie es das Programm
 machen würde):
 
 Start:
+
 - Datenbank, Geld auf Ledger a: 1000
 - Datenbank, Geld auf Ledger b: 1000
 - Datenbank, Geld auf Ledger c: 0
@@ -63,6 +67,7 @@ Start:
 
 
 Schritt 1: Instanz a und Instanz b lesen die Werte aus der Datenbank
+
 - Programm Instanz a, «balance» von Ledger a: 1000
 - Programm Instanz a, «balance» von Ledger b: 1000
 - Programm Instanz a, «balance» von Ledger c: 0
@@ -76,10 +81,11 @@ Schritt 1: Instanz a und Instanz b lesen die Werte aus der Datenbank
 
 
 Schritt 2: Instanz a bucht 10 von Ledger a auf Ledger b (und speichert a und b)
+
 - Programm Instanz a, «balance» von Ledger a:
 - Programm Instanz a, «balance» von Ledger b:
 - Programm Instanz a, «balance» von Ledger c:
-- (HERE LIE DRAGONS, denken Sie gut nach)
+- (HERE LIE DRAGONS, denke gut nach)
 - Programm Instanz b, «balance» von Ledger a:
 - Programm Instanz b, «balance» von Ledger b:
 - Programm Instanz b, «balance» von Ledger c:
@@ -90,6 +96,7 @@ Schritt 2: Instanz a bucht 10 von Ledger a auf Ledger b (und speichert a und b)
 
 
 Schritt 3: Instanz b bucht 20 von Ledger a auf Ledger c (und speichert a und c)
+
 - Programm Instanz a, «balance» von Ledger a:
 - Programm Instanz a, «balance» von Ledger b:
 - Programm Instanz a, «balance» von Ledger c:
@@ -105,11 +112,11 @@ Wie könnte dieses Problem behoben werden?
 
 ### Teilaufgabe 3: Beheben des Problems
 
-Ergänzen Sie LedgerRepository.cs um eine Methode «public void LoadBalance()», welche mit
-dem SQL-Befehl «SELECT balance FROM ledgers WHERE id=@Id» die Balance
-aus der Datenbank liest. Schauen Sie dabei bei LedgerRepository.GetTotalMoney() nach,
+Ergänze `LedgerRepository.cs` um eine Methode `public void LoadBalance(Ledger ledger)`, welche mit
+dem SQL-Befehl `SELECT balance FROM ledgers WHERE id=@Id` die Balance
+aus der Datenbank liest. Schau bei `LedgerRepository.GetTotalMoney()` nach,
 wie man einen Wert aus der Datenbank ausliest.
-Ergänzen Sie LedgerRepository.Book(…) wie folgt.
+Ergänze `LedgerRepository.Book(…)` wie folgt.
     
 ```csharp
 public void Book(decimal amount, Ledger from, Ledger to)
@@ -127,7 +134,7 @@ public void Book(decimal amount, Ledger from, Ledger to)
 
 Das sollte das erkannte Problem beheben?
 
-Starten Sie das Programm mehrfach und prüfen Sie, ob nun kein Geld mehr
+Starte das Programm mehrfach und prüfe, ob nun kein Geld mehr
 verschwindet oder erzeugt wird.
 
 **Houston, we have a problem…**
