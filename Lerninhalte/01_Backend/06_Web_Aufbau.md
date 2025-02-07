@@ -38,8 +38,6 @@ Schau dir das Projekt (zusammen mit `Core` und `DbAccess`) an und beantworte fol
 - **Authentifizierung:**  
   Wo werden der Benutzername und das Passwort überprüft?
 
----
-
 ## Teilaufgabe 1: Authentifizierung
 
 - Verwende Bruno, um Frontend-Aufrufe zu simulieren.
@@ -51,8 +49,6 @@ Schau dir das Projekt (zusammen mit `Core` und `DbAccess`) an und beantworte fol
 - Mache den gleichen Aufruf ohne das Token im Header – was passiert?
 - Rufe auch den Infopunkt mit und ohne Token auf – was ist der Unterschied?  
   **A:** Mit Token wird die Benutzerinfo zurückgegeben.
-
----
 
 ## Teilaufgabe 2: Generelles Verständnis des Backends
 

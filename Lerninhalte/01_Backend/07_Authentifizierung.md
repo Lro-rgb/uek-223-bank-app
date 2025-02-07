@@ -2,33 +2,45 @@
 
 Diese Multiuserapp braucht Authentifizierung und Autorisierung.
 
+- **Authentifizierung** ist der Prozess, bei dem die Identität einer Person überprüft wird.
+- **Autorisierung** ist der Prozess, bei dem die Berechtigungen einer Person überprüft werden.
 
-Authentifizierung ist der Prozess, bei dem die Identität einer Person überprüft wird. 
-
-Autorisierung ist der Prozess, bei dem die Berechtigungen einer Person überprüft werden.
-
-Theoretisch könnte ein Benutzer eingeloggt (Authentifiziert) sein, aber keine Berechtigung (Authorisierung) haben, um auf bestimmte Daten zuzugreifen.
+Theoretisch könnte ein User eingeloggt (authentifiziert) sein, aber keine Berechtigung (autorisierung) haben, um auf bestimmte Daten zuzugreifen.
 
 ## Aufgabenstellung
-Finden Sie heraus, wie die Authentifizierung und die Autorisierung gelöst
-wurden.
+
+Finde heraus, wie die Authentifizierung und die Autorisierung gelöst wurden.
 
 ## Teilaufgabe 1: Authentifizierung
-Beantworten Sie anhand des Quellcodes folgende Fragen:
 
-- Findet eine Authentifizierung statt?
-- Wo und wie findet die Authentifizierung statt?
-- Was für einen Typ von Authentifizierung verwendet dieses Projekt? Welche Technologie wird verwendet?
-- Wo werden den Benutzer:innen die Rollen zugewiesen und wo sind sie gespeichert?
-- Wie wird sichergestellt, dass sich ein User nicht selbst in eine Rolle hinzufügen kann?
+Beantworte anhand des Quellcodes folgende Fragen:
+
+- **Findet eine Authentifizierung statt?**  
+  Prüfe, ob eine Authentifizierung im Code implementiert ist.
+
+- **Wo und wie findet die Authentifizierung statt?**  
+  Untersuche, an welcher Stelle und auf welche Weise die Authentifizierung erfolgt.
+
+- **Welche Art von Authentifizierung wird verwendet?**  
+  Welche Technologie kommt zum Einsatz?
+
+- **Wo werden den Benutzer:innen die Rollen zugewiesen und wo sind sie gespeichert?**  
+  Finde heraus, wo die Rollen festgelegt und gespeichert werden.
+
+- **Wie wird sichergestellt, dass sich ein User nicht selbst in eine Rolle hinzufügen kann?**  
+  Analysiere, welche Mechanismen dies verhindern.
 
 ## Teilaufgabe 2: Authentifizierung
 
-Ändern Sie im Quellcode temporär die Rechte auf die Liste aller Ledger so, dass nur Benutzer:innen in der Rolle «Administrators» Zugriff erhalten.
+Ändere im Quellcode temporär die Rechte auf die Liste aller Ledger, sodass nur Benutzer:innen in der Rolle "Administrators" Zugriff erhalten.
 
-Benutzen Sie JSON-MAN oder POSTMAN und führen Sie folgende Schritte aus:
+Benutze Bruno ([Vorlage](https://gitlab.ict-learnfactory.net/223/bruno)) und führe folgende Schritte aus:
 
-1. Rufen Sie die Liste aller Ledgers ohne Authentifizierung auf, was passiert?
-2. Loggen Sie sich als ein User mit der korrekten Rolle ein und rufen Sie die
-Liste aller Ledgers auf. Was passiert?
-3. Loggen Sie sich als ein User mit einer Rolle ohne Rechte ein und rufen Sie die Liste aller Ledgers auf. Was passiert?
+1. **Ohne Authentifizierung:**  
+   Rufe die Liste aller Ledgers ohne Authentifizierung auf. Was passiert?
+
+2. **Mit korrekter Rolle:**  
+   Logge dich als ein User mit der korrekten Rolle ein und rufe die Liste aller Ledgers auf. Was passiert?
+
+3. **Mit unberechtigter Rolle:**  
+   Logge dich als ein User mit einer Rolle ohne Rechte ein und rufe die Liste aller Ledgers auf. Was passiert?

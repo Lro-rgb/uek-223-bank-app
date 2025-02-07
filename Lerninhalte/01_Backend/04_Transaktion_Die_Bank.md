@@ -153,8 +153,16 @@ Kommentiere zudem die Zeile 20 in `WithTransactions.cs` ein.
 
 Ergänze `LedgerRepository.cs` mit Transaktionen.
 
-Hinweis:  
-Da die Operationen in `LedgerRepository.cs` in der Transaktion ausgeführt werden sollen und in C# die Transaktionen in den Connections verortet sind, darfst du in den Methoden keine eigenen Connections öffnen. Übergebe den Methoden die Connection und die Transaktion.
+Hinweis:
+Pass auf, dass alles in der gleichen Transaktion passiert. Im Code oben wird die Transaktion in der Methode `Book` geöffnet und an die `Update` Methode weitergegeben. Sprich jedes Mal, wenn du von einer Methode im `LedgerRepository` eine andere Methode im `LedgerRepository` aufrufst, musst du die Transaktion weitergeben.
+
+
+```csharp
+    // Book öffnet die Transaktion
+    public void Book(decimal amount, Ledger from, Ledger to);
+    // Update erhält die existierende Transaktion
+    void Update(Ledger ledger, MySqlConnection conn, MySqlTransaction transaction);
+```
 
 Starte das Programm und vergewissere dich, dass es im Singleusermodus noch läuft.
 
