@@ -7,15 +7,13 @@
 - Teamfindung
 - Git und Projektsetup -> Readme und commit gemacht
 - App Aufbau anschauen (ohne Coding)
-- Transaktion Theorie
+- Start Theorie
 
 ## Tag 2
 
-- Backend
-  - Db Setup (Migration, Seeding etc)
-  - Rollenmanagement
-  - Entity Framework
-- Frontend
+- Transaktionen Theorie
+- Backend Theorie
+- Frontend Theorie
 
 ## Tag 3
 
