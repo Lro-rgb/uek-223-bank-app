@@ -113,7 +113,7 @@ Wie könnte dieses Problem behoben werden?
 ### Teilaufgabe 3: Beheben des Problems
 
 Ergänze `LedgerRepository.cs` um eine Methode `public void LoadBalance(Ledger ledger)`, welche mit
-dem SQL-Befehl `SELECT balance FROM ledgers WHERE id=@Id` die Balance
+dem SQL-Befehl `SELECT balance FROM {Ledger.CollectionName} WHERE id=@Id` die Balance
 aus der Datenbank liest. Schau bei `LedgerRepository.GetTotalMoney()` nach,
 wie man einen Wert aus der Datenbank ausliest.
 Ergänze `LedgerRepository.Book(…)` wie folgt.
