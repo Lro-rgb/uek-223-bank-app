@@ -1,12 +1,9 @@
 # Übersicht
 
-[Bewertungskriterien](./Bewertungskriterien.md)
-
 ## Tag 1
 
 - Teamfindung
 - Git und Projektsetup -> Readme und commit gemacht
-- App Aufbau anschauen (ohne Coding)
 - Start Theorie
 
 ## Tag 2

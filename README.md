@@ -11,3 +11,8 @@ Kopiere `.env.example` in `.env` und passe die Werte an.
 Danach kannst du die Datenbank starten mit `docker compose up -d`.
 
 Beachte auch die READMEs in den einzelnen Projekten beim Setup der Umgebung.
+
+## Informationen
+
+- [Bewertungskriterien](./Lerninhalte/Bewertungskriterien.md)
+- [Übersicht](./Lerninhalte/Uebersicht.md)
