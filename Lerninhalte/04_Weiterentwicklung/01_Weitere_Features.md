@@ -34,7 +34,7 @@ Schreibe den Ablauf im Backend auf, wenn du einen Betrag B von Konto "Quelle" au
 
 ## Weitere Features
 
-Nun bist du gefragt: Baue weitere Features ein, die du für sinnvoll hältst, z. B.:
+Nun bist du gefragt: Baue weitere Features ein, die du für sinnvoll hältst, z.B.:
 
 - Konto löschen
 - Konto erstellen
@@ -42,4 +42,4 @@ Nun bist du gefragt: Baue weitere Features ein, die du für sinnvoll hältst, z.
 - Kontoübersicht
 - …
 
-Diese weiteren Features werden als Teil der Bank bewertet.
+Diese weiteren Features werden als Teil der LB bewertet.
