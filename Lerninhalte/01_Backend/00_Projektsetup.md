@@ -40,6 +40,8 @@ Sonstiges:
 - [Datagrip](https://www.jetbrains.com/datagrip/)
 - [Git](https://git-scm.com/)
 
+**Achtung!**: Öffne mit Rider `./Backend/Bank.sln` und mit IntelliJ `./Frontend`.
+
 ### Backend appsettings.json
 
 Kopier das `appsettings.sample.json` wie im [README](https://gitlab.ict-learnfactory.net/223/bank-app/-/blob/main/Backend/README.md) beschrieben. Dabei musst du den Connection String anpassen mit den Werten aus dem `.env` File.

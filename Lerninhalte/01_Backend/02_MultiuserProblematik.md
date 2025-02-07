@@ -26,7 +26,7 @@ umgewandelt werden.
     - `from` soll ein zufälliges Konto sein.
     - `to` soll ein zufälliges Konto sein.
     - `amount` soll ein zufälliger Betrag zwischen 1 und 100 sein.
-    - `Ledgers.Book(amount, from, to);`
+    - `ledgerRepository.Book(amount, from, to);`
     - `Console.Write(".");`
 4. Einen Zeilenumbruch auf der Konsole am Schluss.
 

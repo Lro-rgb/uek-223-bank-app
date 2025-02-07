@@ -1,41 +1,45 @@
 # Weiterentwicklung (Fallbeschreibung)
 
-Die LBank hat nun ein grobes Back- und Frontend. Es fehlen jedoch noch einige Features, um die Anwendung zu vervollständigen. 
+Die Bank hat nun ein grobes Back- und Frontend. Es fehlen jedoch noch einige Features, um die Anwendung nutzbar zu machen.
 
-Im ersten Schritt bauen wir noch die "Buchen" Funktion ein. Diese soll es ermöglichen, dass ein Benutzer eine Buchung tätigen kann.
+Im ersten Schritt bauen wir noch die "Buchen"-Funktion ein. Diese soll es ermöglichen, dass ein User eine Buchung tätigen kann.
 
 ## Teilaufgabe 1: Analyse
 
-Die «Buchen»-Funktion soll einen gegebenen Betrag von einem Konto auf ein anderes übertragen. Zusätzlich soll es nicht möglich sein, mit einer Buchung den Kontostand unter 0 zu bringen. Sie haben folgende Operationen zur
-Verfügung:
-- Betrag von Konto X lesen
-- Betrag von Konto X ändern
-- Konto X in der Datenbank ändern
+Die "Buchen"-Funktion soll einen gegebenen Betrag von einem Konto auf ein anderes übertragen. Zusätzlich soll es nicht möglich sein, mit einer Buchung den Kontostand unter 0 zu bringen. Du hast folgende Operationen zur Verfügung:
 
-Schreiben Sie den Ablauf im Backend auf, wenn Sie einen Betrag B von Konto «Quelle» auf Konto «Ziel» übertragen möchten
+- **Betrag von Konto X lesen**
+- **Betrag von Konto X ändern**
+- **Konto X in der Datenbank ändern**
 
-Wo kann es bei diesem Ablauf bei Multiuserapplikationen zu Problemen kommen? Finden Sie mindestens 3 Probleme.
+Schreibe den Ablauf im Backend auf, wenn du einen Betrag B von Konto "Quelle" auf Konto "Ziel" übertragen möchtest.
 
-Was ist die Lösung dieses Problems?
+- Wo kann es bei diesem Ablauf in Multiuser-Applikationen zu Problemen kommen?  
+    - Finde mindestens drei Probleme.
+- Was ist die Lösung dieses Problems?
 
 ## Teilaufgabe 2: Implementation
 
-Implementieren Sie im Backend den Controller und das Repository.
+- **Backend:**  
+  Implementiere den Controller und das Repository.
 
-Wenn eine Transaktion misslingt, dann sollten Sie sie diese neu starten. Dafür müssen Sie die ganze Operation in eine Schleife einbauen.
+- **Transaktionen:**  
+  Wenn eine Transaktion misslingt, solltest du sie neu starten. Dafür musst du die ganze Operation in eine Schleife einbauen.
 
-Testen Sie das Backend mit der JSON-MAN Website, indem Sie zuerst einloggen und dann den Bookings-API-Endpunkt aufrufen.
+- **Testen:**  
+  Teste das Backend mit der Bruno, indem du dich zuerst einloggst und dann den Bookings-API-Endpunkt aufrufst.
 
-Implementieren Sie im Frontend den API-Service und testen Sie die Buchung in der Applikation.
+- **Frontend:**  
+  Implementiere den API-Service und teste die Buchung in der Applikation.
 
 ## Weitere Features
 
-Nun sind sie gefragt, bauen Sie weitere Features ein, die Sie für sinnvoll halten.
-z.b.:
+Nun bist du gefragt: Baue weitere Features ein, die du für sinnvoll hältst, z. B.:
+
 - Konto löschen
 - Konto erstellen
 - Konto umbenennen
 - Kontoübersicht
-- ...
+- …
 
-Diese weiteren Features werden als Teil der LB bewertet.
+Diese weiteren Features werden als Teil der Bank bewertet.
