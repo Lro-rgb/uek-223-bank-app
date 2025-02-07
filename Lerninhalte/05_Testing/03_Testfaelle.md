@@ -24,7 +24,7 @@ Schreibe zunächst auf, was du alles testen lassen möchtest. Erstelle eine List
 - **Testfall 2:** Buchung in der Rolle „Users“
 - **Testfall 3:** Versuch, ein Ledger ohne ausreichende Rechte zu verändern
 - **Testfall 4:** Buchung, die den Kontostand exakt auf 0 reduziert
-- **Testfall 5:** Buchung, bei der der Betrag größer ist als die verfügbare Balance
+- **Testfall 5:** Buchung, bei der der Betrag grösser ist als die verfügbare Balance
 - **Testfall 6:** Datenintegrität bei parallelen Zugriffen auf Ledgers  
   *(Weitere Testfälle sind denkbar.)*
 

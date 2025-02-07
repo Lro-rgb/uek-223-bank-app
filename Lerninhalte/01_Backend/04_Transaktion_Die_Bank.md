@@ -139,9 +139,9 @@ Ersetze die Funktionen `Book`, `GetAllLedgers` und `GetTotalMoney` im `LedgerRep
 
 ```
 
-Passe zudem das Interface entsprechend an.
+Passe das Interface an
 
-Wenn du dies gemacht hast, passe das Programm.cs an, sodass die Zeile `Simple.Run();` auskommentiert wird und die Zeile `WithTransactions.Run();` einkommentiert wird. Danach sollte es so aussehen: 
+Wenn du dies gemacht hast, passe die `Programm.cs` an, sodass die Zeile `Simple.Run();` auskommentiert wird und die Zeile `WithTransactions.Run();` einkommentiert wird. Danach sollte es so aussehen:
 
 ```csharp
 // Simple.Run(ledgerRepository);
@@ -153,25 +153,27 @@ Kommentiere zudem die Zeile 20 in `WithTransactions.cs` ein.
 
 Ergänze `LedgerRepository.cs` mit Transaktionen.
 
-Hinweis:
-Pass auf, dass alles in der gleichen Transaktion passiert. Im Code oben wird die Transaktion in der Methode `Book` geöffnet und an die `Update` Methode weitergegeben. Sprich jedes Mal, wenn du von einer Methode im `LedgerRepository` eine andere Methode im `LedgerRepository` aufrufst, musst du die Transaktion weitergeben.
-
+> **Hinweis:**  
+> Pass auf, dass alles in der gleichen Transaktion passiert. Im obigen Code wird die Transaktion in der Methode `Book` geöffnet und an die Methode `Update` weitergegeben. Das bedeutet, dass jedes Mal, wenn du von einer Methode im `LedgerRepository` eine andere Methode im `LedgerRepository` aufrufst, du die Transaktion weitergeben musst.
 
 ```csharp
-    // Book öffnet die Transaktion
-    public void Book(decimal amount, Ledger from, Ledger to);
-    // Update erhält die existierende Transaktion
-    void Update(Ledger ledger, MySqlConnection conn, MySqlTransaction transaction);
+// Book öffnet die Transaktion
+public void Book(decimal amount, Ledger from, Ledger to);
+
+// Update erhält die existierende Transaktion
+void Update(Ledger ledger, MySqlConnection conn, MySqlTransaction transaction);
 ```
 
 Starte das Programm und vergewissere dich, dass es im Singleusermodus noch läuft.
 
+---
+
 ### Teilaufgabe 2: Ausgabe
 
-Gib bei jeder erfolgreichen Transaktion einen Punkt, für jedes Rollback ein "R" und für jeden Rollbackfehler ein "E" aus.
+Gib bei jeder erfolgreichen Transaktion einen Punkt, für jedes Rollback ein `"R"` und für jeden Rollbackfehler ein `"E"` aus.
 
 Starte das Programm mehrfach.
 
 Die Ausgabe sollte wie folgt aussehen:
 
-![](./images/cli-transactions.png)
+![CLI Transaktionen](./images/cli-transactions.png)
