@@ -1,17 +1,19 @@
 # Transaktionen Teil 2
 
 ## Ausgangslage
-Sie haben das Programm für die L-Bank, das leider Geld erzeugt und vernichtet.
-Sie haben auch das Theoretische Wissen über Transaktionen und den Ablauf schon durchgespielt.
+
+Du hast das Programm für die Bank, das leider Geld erzeugt und vernichtet.
+Du hast auch das Theoretische Wissen über Transaktionen und den Ablauf schon durchgespielt.
 
 ## Aufgabenstellung
-Fixen Sie die L-Bank.
+
+Fixe die Bank.
 
 ### Teilaufgabe 1: Transaktionen
-Ersetzen Sie die Funktionen, Book, GetAllLedgers und GetTotalMoney  im LedgerRepository durch den Code unterhalb. 
+
+Ersetze die Funktionen `Book`, `GetAllLedgers` und `GetTotalMoney` im `LedgerRepository` durch den Code unterhalb. Später kannst du den Code auch mit Entity Framework umbauen.
+
 ```csharp
-
-
     public string Book(decimal amount, Ledger from, Ledger to)
     {
         using (MySqlConnection conn = new MySqlConnection(this.databaseSettings.ConnectionString))
@@ -137,9 +139,9 @@ Ersetzen Sie die Funktionen, Book, GetAllLedgers und GetTotalMoney  im LedgerRep
 
 ```
 
-Passen sie zudem das Interface entsprechend an.
+Passe zudem das Interface entsprechend an.
 
-Wenn Sie dies gemacht haben, passen Sie das Programm.CS an, Sodass die Zeile "Simple.Run();" auskommentiert wird und die Zeile "WithTransactions.Run();" einkommentiert wird. Danach sollte es so aussehen: 
+Wenn du dies gemacht hast, passe das Programm.cs an, sodass die Zeile `Simple.Run();` auskommentiert wird und die Zeile `WithTransactions.Run();` einkommentiert wird. Danach sollte es so aussehen: 
 
 ```csharp
 // Simple.Run(ledgerRepository);
@@ -147,19 +149,20 @@ Wenn Sie dies gemacht haben, passen Sie das Programm.CS an, Sodass die Zeile "Si
 WithTransactions.Run(allLedgers, ledgerRepository);
 ```
 
-Kommentieren Sie zudem die Zeile 23 im "WithTransactions.cs" ein.
+Kommentiere zudem die Zeile 20 in `WithTransactions.cs` ein.
 
-Ergänzen Sie «LedgerRepository.cs» und «Ledger.cs» mit Transaktionen.
+Ergänze `LedgerRepository.cs` mit Transaktionen.
 
-Hinweis:
-Da die Operationen in «LedgerRepository.cs» in der Transaktion ausgeführt werden sollen, und in C# die Transaktionen in den Connections verortet sind, dürfen Sie in den Methoden keine eigenen Connections öffnen. Übergeben Sie den Methoden die Connection und die Transaktion.
+Hinweis:  
+Da die Operationen in `LedgerRepository.cs` in der Transaktion ausgeführt werden sollen und in C# die Transaktionen in den Connections verortet sind, darfst du in den Methoden keine eigenen Connections öffnen. Übergebe den Methoden die Connection und die Transaktion.
 
-Starten Sie das Programm und vergewissern Sie sich, dass es im Singleusermodus noch läuft.
+Starte das Programm und vergewissere dich, dass es im Singleusermodus noch läuft.
 
 ### Teilaufgabe 2: Ausgabe
-Geben Sie bei jeder erfolgreichen Transaktion einen Punkt, für jedes Rollback ein «R» und für jeden Rollbackfehler ein «E» aus. 
 
-Starten Sie das Programm mehrfach.
+Gib bei jeder erfolgreichen Transaktion einen Punkt, für jedes Rollback ein "R" und für jeden Rollbackfehler ein "E" aus.
+
+Starte das Programm mehrfach.
 
 Die Ausgabe sollte wie folgt aussehen:
 

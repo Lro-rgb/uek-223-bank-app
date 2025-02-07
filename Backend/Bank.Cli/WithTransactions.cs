@@ -7,9 +7,6 @@ public static class WithTransactions
 {
     public static void Run(IEnumerable<Ledger> ledgers, ILedgerRepository ledgerRepository)
     {
-        ////////////////////
-        // Your Code Here
-        ////////////////////
         Console.WriteLine();
         Console.WriteLine("Booking, press ESC to stop.");
 
@@ -20,14 +17,10 @@ public static class WithTransactions
             var from = allLedgersAsArray[random.Next(allLedgersAsArray.Length)];
             var to = allLedgersAsArray[random.Next(allLedgersAsArray.Length)];
             var amount = random.NextInt64(1, 101);
-            //Console.Write(ledgerRepository.Book(amount, from, to)); !Uncomment this line
+            // Console.Write(ledgerRepository.Book(amount, from, to)); !Uncomment this line
         }
 
         Console.WriteLine();
-        ////////////////////
-        // Your Code Here
-        ////////////////////
-
         Console.WriteLine();
         Console.WriteLine("Getting total money in system at the end.");
         try
