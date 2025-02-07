@@ -33,11 +33,11 @@ Laut Aufgabenstellung hast du folgende Komponenten:
 Ordne die Komponenten so an, wie du denkst, dass es Sinn ergibt, und verbinde sie.
 
 - **GUI (3 Benutzer:innen):**  
-  ![](2024-11-22-10-57-26.png)
+  ![](gui.png)
 - **Businesslogik:**  
-  ![](2024-11-22-10-57-39.png)
+  ![](business.png)
 - **Datenbank:**  
-  ![](2024-11-22-10-57-46.png)
+  ![](db.png)
 
 Es gibt noch eine Entscheidung, die du treffen musst: **Wie verbindest du dich mit der Datenbank?**
 
@@ -59,7 +59,7 @@ Beantworte folgende Fragen zu deiner Hypothese:
 
 Eine Möglichkeit wäre, ein Programm mit GUI zu entwickeln, bei dem die Businesslogik integriert ist und das über das Internet die Datenbankverbindung herstellt.
 
-![](2024-11-22-10-59-07.png)
+![](gui-with-business.png)
 
 #### Das Problem mit Variante 1
 
@@ -88,7 +88,7 @@ Zwar verhindert das die GUI, aber was würdest du als kreative/r Hacker:in vorsc
 
 ### Teilaufgabe 3: Lösung
 
-![Die Lösung](image.png)
+![Die Lösung](solution.png)
 
 Beantworte folgende Fragen:
 

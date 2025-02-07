@@ -32,7 +32,7 @@ umgewandelt werden.
 
 Der Ablauf sollte so aussehen:
 
-![Ablauf Programm](2024-11-21-09-53-50.png)
+![Ablauf Programm](cli-demo.png)
 
 Lass das Programm laufen. Verändert sich die Summe des Geldes im
 System? Sollte sie sich verändern?

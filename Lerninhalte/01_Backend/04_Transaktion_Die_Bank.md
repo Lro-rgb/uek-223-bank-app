@@ -174,4 +174,4 @@ Starte das Programm mehrfach.
 
 Die Ausgabe sollte wie folgt aussehen:
 
-![](2024-11-22-10-39-20.png)
+![](cli-transactions.png)

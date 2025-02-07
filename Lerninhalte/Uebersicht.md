@@ -14,6 +14,7 @@
 - Transaktionen Theorie
 - Backend Theorie
 - Frontend Theorie
+- CLI
 
 ## Tag 3
 

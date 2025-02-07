@@ -11,7 +11,7 @@ In dieser Aufgabe werden Transaktionen theoretisch und praktisch erkundet.
 In folgender Tabelle läuft die Zeit von oben nach unten. P0 bis P2 sind unterschiedliche Prozesse (Programme, User, …).  
 a, b, c sind unterschiedliche Datensätze.
 
-![](2024-11-22-09-52-36.png)
+![](transaction-theory-1.png)
 
 Gehe davon aus, dass wenn ein Prozess einen Datensatz (a, b oder c) liest und danach schreibt, er damit arbeitet und die Datenbank zu diesem Zeitpunkt inkonsistent ist.  
 Versuche zu identifizieren, wo folgende Probleme auftreten können:
@@ -27,7 +27,7 @@ Welchen Isolationslevel brauchst du, um diese Probleme zu verhindern?
 
 Nimm folgenden Ablauf für die Bank:
 
-![](2024-11-22-09-57-22.png)
+![](transaction-theory-2.png)
 
 Versuche zu identifizieren, wo folgende Probleme auftreten können:
 - Dirty Read
@@ -62,7 +62,7 @@ Schreibe statt den Anweisungen nun die SQL-Befehle in die Tabelle.
 - P0 soll 20 von a zu b buchen.
 - P1 soll 30 von b zu a buchen.
 
-![](2024-11-22-10-07-21.png)
+![](transaction-theory-3.png)
 
 | Zeit | P0 | P1 | P2 |
 | --- | --- | --- | --- |
