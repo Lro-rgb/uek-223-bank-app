@@ -54,7 +54,7 @@ Teste auch, dass Fehlerzustände nicht auftreten können, zum Beispiel:
 - Ein Ledger wird nicht geändert, wenn eine falsche ID verwendet wird.
 - Edge-Cases, wie wenn der genaue Betrag auf einem Ledger gebucht wird und die Balance danach 0 ist.
 
-Da wir für die Multiusertests die "echte" Datenbank verwenden, mocken wir die Datenbank nicht. In einer echten Applikation würden Frameworks wie "Moq" für diese Aufgabe eingesetzt.
+Da wir für die Multiusertests die "echte" Datenbank verwenden, mocken wir die Datenbank nicht. In einer echten Applikation würden Frameworks wie "Moq" für diese Aufgabe eingesetzt. (Falls du willst darfst du die Tests auch mit Moq schreiben oder eine In-Memory-Datenbank verwenden.)
 
 Die gesuchten Fachleute sind diejenigen, die ChatGPT für die mühsamen Arbeiten verwenden und den Output verstehen sowie korrigieren können. Um etwas zu verstehen, muss man die mühsame Arbeit normalerweise zuerst selbst erledigen. Finde also eine gute Mischung zwischen selbst erstellten Unittests und der Hilfe von ChatGPT.
 
