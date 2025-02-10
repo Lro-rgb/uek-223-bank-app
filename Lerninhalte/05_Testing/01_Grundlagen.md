@@ -60,7 +60,7 @@ Die gesuchten Fachleute sind diejenigen, die ChatGPT für die mühsamen Arbeiten
 
 > **Wichtig:** Damit du die Unittests ohne Mocks durchführen kannst, musst du Dependency Injection verwenden. Hierfür benötigst du noch ein weiteres NuGet-Package für xUnit. Installiere hierfür `Xunit.Microsoft.DependencyInjection`.
 
-### Teilaufgabe 2: Parallele Unittests
+### Teilaufgabe 2: Parallele Unittests (Optional, da wir das mit den Loadtests auch testen)
 
 Wir erstellen ein eigenes Projekt für diese Unittests, da sie einige Regeln für Unittests verletzen:
 
