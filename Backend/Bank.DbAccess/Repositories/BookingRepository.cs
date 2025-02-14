@@ -1,15 +1,12 @@
 ﻿using Bank.DbAccess.Data;
-using Microsoft.Extensions.Options;
 
 namespace Bank.DbAccess.Repositories;
 
-public class BookingRepository(IOptions<DatabaseSettings> settings, AppDbContext context) : IBookingRepository
+public class BookingRepository(AppDbContext context) : IBookingRepository
 {
-    private DatabaseSettings _settings = settings.Value;
-
     public bool Book(int sourceLedgerId, int destinationLKedgerId, decimal amount)
     {
-        // Machen Sie eine Connection und eine Transaktion
+        // Machen Sie eine Connection und eine Transaktion. Noch besser ist es, das in einem Service zu machen.
 
         // In der Transaktion:
 

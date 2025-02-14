@@ -20,6 +20,7 @@ public class BookingsController(IBookingRepository bookingRepository) : Controll
 
             // Rufe "Book" im "BookingRepository" auf.
             // Noch besser wäre es, wenn du einen Service verwenden würdest, der die Geschäftslogik enthält.
+            // Der Service würde dann das booking und ledger Repository verwenden. Die Transaktionen würden im Service verwaltet.
             // Gib je nach Erfolg OK() oder Conflict() zurück
             return response;
         });

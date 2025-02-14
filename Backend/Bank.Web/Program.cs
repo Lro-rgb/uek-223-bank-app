@@ -58,6 +58,7 @@ public static class Program
         builder.Services.AddAuthorization();
         builder.Services.AddTransient<IDatabaseSeeder, DatabaseSeeder>();
         builder.Services.AddTransient<ILedgerRepository, LedgerRepository>();
+        builder.Services.AddTransient<ILedgerRepositoryEf, LedgerRepositoryEf>();
         builder.Services.AddTransient<IUserRepository, UserRepository>();
         builder.Services.AddTransient<ILoginService, LoginService>();
         builder.Services.AddTransient<IBookingRepository, BookingRepository>();
