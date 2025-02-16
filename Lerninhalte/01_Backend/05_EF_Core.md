@@ -1,4 +1,4 @@
-# EF Core (Optional)
+# EF Core
 
 EF (EntityFramework Core) ist ein Object-Relational-Mapper (ORM) für .NET. Es ermöglicht die Interaktion mit einer Datenbank, ohne SQL schreiben zu müssen. EF Core ist eine leichtgewichtige, modulare Version von EF, die in .NET Core Anwendungen verwendet wird.
 
