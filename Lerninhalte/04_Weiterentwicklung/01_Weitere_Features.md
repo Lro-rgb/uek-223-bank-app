@@ -44,4 +44,4 @@ Nun bist du gefragt: Baue weitere Features ein, die du für sinnvoll hältst, z.
 
 Diese weiteren Features werden als Teil der LB bewertet.
 
-Optional kannst du in deinem Feature auch Authorization Logik einbauen. Auch ist ein beispiel mit [Optimistic Locking](https://learn.microsoft.com/en-us/ef/core/saving/concurrency?tabs=data-annotations#optimistic-concurrency) möglich.
+Optional kannst du in deinem Feature auch Authorization Logik einbauen. Auch ist ein Feature mit [Optimistic Locking](https://learn.microsoft.com/en-us/ef/core/saving/concurrency?tabs=data-annotations#optimistic-concurrency) möglich.
