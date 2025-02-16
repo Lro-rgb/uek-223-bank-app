@@ -27,7 +27,7 @@ Schreibe den Ablauf im Backend auf, wenn du einen Betrag B von Konto "Quelle" au
   Wenn eine Transaktion misslingt, solltest du sie neu starten. Dafür musst du die ganze Operation in eine Schleife einbauen.
 
 - **Testen:**  
-  Teste das Backend mit der Bruno, indem du dich zuerst einloggst und dann den Bookings-API-Endpunkt aufrufst.
+  Teste das Backend mit Bruno, indem du dich zuerst einloggst und dann den Bookings-API-Endpunkt aufrufst.
 
 - **Frontend:**  
   Implementiere den API-Service und teste die Buchung in der Applikation.
