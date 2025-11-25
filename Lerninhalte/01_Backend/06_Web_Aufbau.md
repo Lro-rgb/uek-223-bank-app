@@ -41,7 +41,7 @@ Schau dir das Projekt (zusammen mit `Core` und `DbAccess`) an und beantworte fol
 ## Teilaufgabe 1: Authentifizierung
 
 - Verwende Bruno, um Frontend-Aufrufe zu simulieren.
-    - Eine Vorlage findest du [hier](https://gitlab.ict-learnfactory.net/223/bruno)
+    - Eine Vorlage findest du [hier](https://gitlab.ict-learnfactory.ch/223/bruno)
     - Erstell ein neues Projekt in deiner Gruppe um die API Collection zu teilen.
 - Logge dich ein, indem du ein JWT anforderst.
 - Kopiere das JWT.

@@ -34,7 +34,7 @@ Beantworte anhand des Quellcodes folgende Fragen:
 
 Ändere im Quellcode temporär die Rechte auf die Liste aller Ledger, sodass nur Benutzer:innen in der Rolle "Administrators" Zugriff erhalten.
 
-Benutze Bruno ([Vorlage](https://gitlab.ict-learnfactory.net/223/bruno)) und führe folgende Schritte aus:
+Benutze Bruno ([Vorlage](https://gitlab.ict-learnfactory.ch/223/bruno)) und führe folgende Schritte aus:
 
 1. **Ohne Authentifizierung:**  
    Rufe die Liste aller Ledgers ohne Authentifizierung auf. Was passiert?

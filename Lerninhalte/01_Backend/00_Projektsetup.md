@@ -9,7 +9,7 @@ Um mit dem Modul 223 zu starten, müssen wir unsere Geräte bereit machen für d
    [Docker – Get Docker](https://docs.docker.com/get-docker/)
 
 2. **Lies das README:**  
-   Schau dir unbedingt das [README](https://gitlab.ict-learnfactory.net/223/bank-app/-/blob/main/README.md) File an und folge den Anweisungen.
+   Schau dir unbedingt das [README](https://gitlab.ict-learnfactory.ch/223/bank-app/-/blob/main/README.md) File an und folge den Anweisungen.
 
 3. **Starte den Container:**  
    Starte den Container mit der MariaDB über das bereits vorhandene `docker-compose.yml` File.
@@ -19,7 +19,7 @@ Um mit dem Modul 223 zu starten, müssen wir unsere Geräte bereit machen für d
 
 ## Dev Setup
 
-Eine Person in der Gruppe lädt das [Vorlagenprojekt](https://gitlab.ict-learnfactory.net/223/bank-app) herunter und teilt es mit den anderen in eurer GitLab-Gruppe (initialer Commit). Stellt sicher, dass ihr alle Zugriff auf das Projekt habt und Git-Commits machen könnt.
+Eine Person in der Gruppe lädt das [Vorlagenprojekt](https://gitlab.ict-learnfactory.ch/223/bank-app) herunter und teilt es mit den anderen in eurer GitLab-Gruppe (initialer Commit). Stellt sicher, dass ihr alle Zugriff auf das Projekt habt und Git-Commits machen könnt.
 
 ### Tools
 
@@ -49,7 +49,7 @@ Eine Person in der Gruppe lädt das [Vorlagenprojekt](https://gitlab.ict-learnfa
 
 ### Backend: appsettings.json
 
-- Kopiere das `appsettings.sample.json` wie im [README](https://gitlab.ict-learnfactory.net/223/bank-app/-/blob/main/Backend/README.md) beschrieben.
+- Kopiere das `appsettings.sample.json` wie im [README](https://gitlab.ict-learnfactory.ch/223/bank-app/-/blob/main/Backend/README.md) beschrieben.
 - Passe dabei den Connection String mit den Werten aus dem `.env` File an.
 
 ---
@@ -65,4 +65,4 @@ Du findest sie im Repository unter `frontend` und `backend` (nämlich `Bank.Cli`
 
 > **Hinweis:**  
 > Falls es nicht startet, könnte es daran liegen, dass das `appsettings.json` nicht sauber kopiert wird im Build-Prozess. Im `.csproj` File muss dies konfiguriert werden.  
-> [Beispiel](https://gitlab.ict-learnfactory.net/223/bank-app/-/blob/main/Backend/Bank.Web/Bank.Web.csproj?ref_type=heads#L25).
+> [Beispiel](https://gitlab.ict-learnfactory.ch/223/bank-app/-/blob/main/Backend/Bank.Web/Bank.Web.csproj?ref_type=heads#L25).
