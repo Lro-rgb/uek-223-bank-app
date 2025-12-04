@@ -1,0 +1,14 @@
+image: rust:latest
+
+pages:
+  stage: deploy
+  script:
+    - cargo install mdbook
+    - cd Lerninhalte
+    - mdbook build
+    - mv book ../public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
