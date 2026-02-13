@@ -14,5 +14,16 @@ Beachte auch die READMEs in den einzelnen Projekten beim Setup der Umgebung.
 
 ## Informationen
 
-- [Bewertungskriterien](./Lerninhalte/Bewertungskriterien.md)
-- [Übersicht](./Lerninhalte/Uebersicht.md)
+- [Unterlagen](https://pages.ict-learnfactory.ch/223/bank-app/)
+- [Bewertungskriterien](./Lerninhalte/src/LB_223.md)
+- [Übersicht](./Lerninhalte/src/Uebersicht.md)
+
+## Unterlagen bearbeiten
+
+1. [Rust installieren](https://rust-lang.org/tools/install/)
+2. `cargo install mdbook`
+3. `mdbook serve --open` im Projekt Pfad (`Lerninhalte`) ausführen
+
+---
+
+[Dokumentation mdBook](https://rust-lang.github.io/mdBook/index.html)
