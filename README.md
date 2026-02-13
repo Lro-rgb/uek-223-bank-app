@@ -15,8 +15,8 @@ Beachte auch die READMEs in den einzelnen Projekten beim Setup der Umgebung.
 ## Informationen
 
 - [Unterlagen](https://pages.ict-learnfactory.ch/223/bank-app/)
-- [Bewertungskriterien](./Lerninhalte/src/LB_223.md)
-- [Übersicht](./Lerninhalte/src/Uebersicht.md)
+- [Bewertungskriterien](https://pages.ict-learnfactory.ch/223/bank-app/LB_223.html)
+- [Übersicht](https://pages.ict-learnfactory.ch/223/bank-app/Uebersicht.html)
 
 ## Unterlagen bearbeiten
 
