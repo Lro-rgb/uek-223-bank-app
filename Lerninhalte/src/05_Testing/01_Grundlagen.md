@@ -16,7 +16,7 @@ In der aktuellen Applikation gibt es sehr wenig Logik, daher ist ein Unit-Test n
 - **Teste** die Funktionen mit verschiedenen Parametern und prüfe, ob sie das richtige Resultat zurückgeben.
 
 Frische dein Wissen über Testing auf, zum Beispiel mit den folgenden Quellen:  
-- [xUnit - Getting Started mit .NET Core in Visual Studio](https://xunit.net/docs/getting-started/netcore/visual-studio)  
+- [xUnit - Getting Started mit .NET Core in Visual Studio](https://xunit.net/docs/getting-started/v2/getting-started)  
 - [Unit Testing with dotnet test](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test)
 
 Erstelle folgendes Grundgerüst:
