@@ -1,29 +1,34 @@
-# 223 Bank App
+# Bank-App – ÜK 223
 
-Willkommen beim Ük 223! In diesem Repository findest du den Code für die Applikation, die wir im Modul 223 erstellen werden, sowie die Lerninhalte.
+Gruppe: Matti & Luis
 
-Dieses Repository dient als Ablage für die bereitgestellten Informationen. Gewisse Informationen befinden sich auch im LearningView.
-Ebenfalls wird wie gewohnt im LearningView die Dokumentation der Arbeit abgegeben, sowie der Fortschritt dokumentiert.
+Bank-App aus dem ÜK 223 (Backend, Frontend und Kursunterlagen). Doku und Fortschritt geben wir im LearningView ab.
 
 ## Setup
 
-Kopiere `.env.example` in `.env` und passe die Werte an.  
-Danach kannst du die Datenbank starten mit `docker compose up -d`.
+1. `.env.sample` nach `.env` kopieren und die Passwörter setzen.
+2. Datenbank starten: `docker compose up -d`
+3. In `Backend/Bank.Web` und `Backend/Bank.Cli` jeweils `appsettings.sample.json` nach `appsettings.json` kopieren und den Connection-String mit den Werten aus der `.env` füllen:
+   ```
+   Server=localhost;Port=3306;Database=bank;User=bank_user;Password=<MARIADB_PASSWORD>;
+   ```
+   In `Bank.Web` zusätzlich einen eigenen `PrivateKey` setzen (mind. 32 Zeichen).
+4. Alles Weitere zu Backend und Frontend steht in den READMEs der jeweiligen Ordner.
 
-Beachte auch die READMEs in den einzelnen Projekten beim Setup der Umgebung.
+`.env` und `appsettings.json` sind im `.gitignore` und werden nicht committet.
 
-## Informationen
+## Links
 
 - [Unterlagen](https://pages.ict-learnfactory.ch/ict-learnfactory/223/bank-app)
 - [Bewertungskriterien](https://pages.ict-learnfactory.ch/ict-learnfactory/223/bank-app/LB_223.html)
 - [Übersicht](https://pages.ict-learnfactory.ch/ict-learnfactory/223/bank-app/Uebersicht.html)
 
-## Unterlagen bearbeiten
+## Unterlagen lokal bearbeiten
 
-1. [Rust installieren](https://rust-lang.org/tools/install/)
-2. `cargo install mdbook`
-3. `mdbook serve --open` im Projekt Pfad (`Lerninhalte`) ausführen
+Braucht [Rust](https://rust-lang.org/tools/install/) und [mdBook](https://rust-lang.github.io/mdBook/index.html):
 
----
-
-[Dokumentation mdBook](https://rust-lang.github.io/mdBook/index.html)
+```
+cargo install mdbook
+cd Lerninhalte
+mdbook serve --open
+```
