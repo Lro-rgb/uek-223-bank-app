@@ -40,7 +40,7 @@ A1–A4 stammen aus den Kursunterlagen (Testing → Testfälle), A5 ist eine eig
 | **Anforderung** | A3 |
 | **Vorbedingung** | Als `testuser` eingeloggt. |
 | **Schritte** | 1. Saldi notieren. 2. Im Frontend 10 von X auf Y buchen. 3. Ledger-Liste neu laden. |
-| **Erwartetes Ergebnis** | Buchung wird abgelehnt (403), Fehlermeldung im Frontend. Alle Saldi unverändert. |
+| **Erwartetes Ergebnis** | Fehlermeldung im Frontend, im Network-Tab 403. Alle Saldi unverändert. |
 | **Tatsächliches Ergebnis** | |
 | **Status** | |
 
@@ -84,7 +84,7 @@ A1–A4 stammen aus den Kursunterlagen (Testing → Testfälle), A5 ist eine eig
 | **Anforderung** | A4 |
 | **Vorbedingung** | Als `admin` eingeloggt. Saldo von X notiert. |
 | **Schritte** | 1. Saldo von X + 1 auf Y buchen. 2. Ledger-Liste neu laden. |
-| **Erwartetes Ergebnis** | Buchung abgelehnt (409 Conflict), Fehlermeldung im Frontend. X und Y unverändert. |
+| **Erwartetes Ergebnis** | Fehlermeldung im Frontend, im Network-Tab 409. X und Y unverändert. |
 | **Tatsächliches Ergebnis** | |
 | **Status** | |
 
@@ -107,6 +107,7 @@ A1–A4 stammen aus den Kursunterlagen (Testing → Testfälle), A5 ist eine eig
 | **Art** | Explorativer Test, keine fixe Ein- und Ausgabe |
 | **Vorbedingung** | Zwei Browser (oder ein normales und ein privates Fenster), beide als `admin` eingeloggt. Total notiert. |
 | **Schritte** | 1. In beiden Fenstern eine Buchung vom selben Konto X vorbereiten, zusammen mehr als der Saldo von X. 2. Möglichst gleichzeitig absenden. 3. Mehrmals wiederholen, auch mit kleinen Beträgen und vertauschten Konten. 4. Ledger-Liste neu laden. |
+| **Weitere Testidee** | Zwei Browser treffen die Race Condition selten. Deshalb zusätzlich viele `POST /api/v1/Bookings` gleichzeitig senden, z.B. mit mehreren Bruno-Runnern gleichzeitig oder einem kleinen Skript (mehrere `curl`-Aufrufe parallel), und danach Saldi und Total prüfen. |
 | **Erwartetes Ergebnis** | Höchstens so viel abgebucht, wie auf X war. Kein Saldo unter 0. Total unverändert. Keine Fehlerseite (500). |
 | **Beobachtungen** | |
 | **Status** | |
