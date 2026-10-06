@@ -20,6 +20,7 @@ public class DatabaseSeeder(AppDbContext context) : IDatabaseSeeder
             new() { Name = "Manitu AG", Balance = moneyProvider.Next(100, 10001) },
             new() { Name = "Chrysalkis GmbH", Balance = moneyProvider.Next(100, 10001) },
             new() { Name = "Smith & Co KG", Balance = moneyProvider.Next(100, 10001) },
+            new() { Name = "Testkonto leer", Balance = 0 },
         };
 
         context.Ledgers.AddRange(seedLedgers);
