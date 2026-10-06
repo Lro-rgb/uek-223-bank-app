@@ -24,12 +24,12 @@ export class LedgerService {
         return new Observable<Ledger[]>();
     }
 
-    transferFunds(fromLedgerId: number, toLedgerId: number, amount: number): Observable<unknown> {
+    book(sourceId: number, destinationId: number, amount: number): Observable<void> {
         const payload = {
-            fromLedgerId,
-            toLedgerId,
+            sourceId,
+            destinationId,
             amount,
         };
-        return this.http.post(`${this.apiUrl}/ledgers/transfer`, payload);
+        return this.http.post<void>(`${this.apiUrl}/bookings`, payload);
     }
 }
