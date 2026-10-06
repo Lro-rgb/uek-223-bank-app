@@ -22,4 +22,8 @@
       <ProjectReference Include="..\Bank.Core\Bank.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <InternalsVisibleTo Include="Bank.Tests" />
+    </ItemGroup>
+
 </Project>
