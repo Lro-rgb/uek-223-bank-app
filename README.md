@@ -63,6 +63,10 @@ Serializable (so wie in den Kursunterlagen) wäre auch sicher, sperrt aber schon
 - [Bewertungskriterien](https://pages.ict-learnfactory.ch/ict-learnfactory/223/bank-app/LB_223.html)
 - [Übersicht](https://pages.ict-learnfactory.ch/ict-learnfactory/223/bank-app/Uebersicht.html)
 
+## Tests
+
+- [Manuelle Testfälle](docs/manuelle-testfaelle.md)
+
 ## Unterlagen lokal bearbeiten
 
 Braucht [Rust](https://rust-lang.org/tools/install/) und [mdBook](https://rust-lang.github.io/mdBook/index.html):
