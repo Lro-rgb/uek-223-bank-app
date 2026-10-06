@@ -49,7 +49,7 @@ Läuft das ohne Transaktion, kann zwischen jedem Schritt ein anderer User diesel
 | Transaktion mit Isolationslevel (Buchung als eine Einheit) | Halbe Buchung | offen: `BookingRepository.Book()` | offen: Lasttest mit NBomber (`Bank.Tests.Loadtest.Cli`), Total vorher = Total nachher |
 | Saldo-Prüfung in der Transaktion mit `SELECT ... FOR UPDATE` | Saldo unter 0, Lost Update | offen: `BookingRepository.Book()` | offen: Integrationstests „Betrag grösser als Saldo wird nicht gebucht (409 Conflict)“ und „Buchung genau auf 0 klappt“, Lasttest: kein Saldo unter 0 |
 | Retry-Schleife bei Deadlock (1213) oder Lock-Wait-Timeout (1205), feste Sperr-Reihenfolge | Abgebrochene Transaktionen gehen verloren | offen: `BookingRepository.Book()` (Vorbild: Schleife in `LedgerRepository.GetAllLedgers()`) | offen: Lasttest mit mehreren parallelen Usern: keine 500er, Total bleibt gleich, Anzahl Retries wird geloggt |
-| Optimistic Locking (Concurrency-Token) im Zusatz-Feature | Lost Update beim gleichzeitigen Bearbeiten eines Kontos | offen: Zusatz-Feature (z.B. Konto umbenennen) | offen: Unit-Test „zweites Speichern mit altem Stand gibt Konflikt“ |
+| Historien-Eintrag (Tabelle `Bookings`) in derselben Transaktion wie die beiden Saldo-Updates. Keine Buchung ohne Eintrag, kein Eintrag ohne Buchung, auch bei Retry und Rollback. | Historie und Kontostände passen nicht zusammen (z.B. Eintrag einer zurückgerollten Buchung) | offen: `BookingRepository.Book()` + Buchungshistorie (Zusatz-Feature 2) | offen: NBomber (Anzahl 200er = Anzahl neue Einträge in `Bookings`) + TF-09 |
 
 ### Isolationslevel für Buchen
 

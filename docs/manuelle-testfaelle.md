@@ -5,11 +5,11 @@
 | Nr. | Anforderung |
 |---|---|
 | A1 | Nur Benutzer:innen in der Rolle „Administrators“ oder „Users“ können alle Ledgers sehen. |
-| A2 | Bei einer Buchung wird ein Geldbetrag von einem Konto auf ein anderes verschoben. |
-| A3 | Nur Benutzer:innen in der Rolle „Administrators“ können Ledgers verändern (dazu zählt auch Buchen). |
+| A2 | Benutzer:innen in der Rolle „Administrators“ oder „Users“ können buchen. Dabei wird ein Geldbetrag von einem Konto auf ein anderes verschoben. |
+| A3 | Nur Benutzer:innen in der Rolle „Administrators“ können Ledgers direkt verändern (Name, Saldo). Buchen ist davon ausgenommen (siehe A2). |
 | A4 | Bei einer Buchung darf der Kontostand nie unter 0 fallen. |
 | A5 | Der Buchungsbetrag muss grösser als 0 sein. |
-| A6 | Zusatz-Feature (folgt) |
+| A6 | Jede erfolgreiche Buchung erscheint genau einmal in der Historie, abgelehnte Buchungen gar nicht. |
 
 A1–A4 stammen aus den Kursunterlagen (Testing → Testfälle), A5 ist eine eigene Anforderung.
 
@@ -37,10 +37,10 @@ A1–A4 stammen aus den Kursunterlagen (Testing → Testfälle), A5 ist eine eig
 
 | | |
 |---|---|
-| **Anforderung** | A3 |
-| **Vorbedingung** | Als `testuser` eingeloggt. |
+| **Anforderung** | A2 |
+| **Vorbedingung** | Als `testuser` eingeloggt. Konto X hat mindestens 10. |
 | **Schritte** | 1. Saldi notieren. 2. Im Frontend 10 von X auf Y buchen. 3. Ledger-Liste neu laden. |
-| **Erwartetes Ergebnis** | Fehlermeldung im Frontend, im Network-Tab 403. Alle Saldi unverändert. |
+| **Erwartetes Ergebnis** | Erfolgsmeldung im Frontend, im Network-Tab 200. X hat 10 weniger, Y hat 10 mehr. Total unverändert. |
 | **Tatsächliches Ergebnis** | |
 | **Status** | |
 
@@ -112,13 +112,13 @@ A1–A4 stammen aus den Kursunterlagen (Testing → Testfälle), A5 ist eine eig
 | **Beobachtungen** | |
 | **Status** | |
 
-### TF-09 Zusatz-Feature (Platzhalter)
+### TF-09 Abgelehnte Buchung erzeugt keinen Historien-Eintrag
 
 | | |
 |---|---|
 | **Anforderung** | A6 |
-| **Vorbedingung** | |
-| **Schritte** | |
-| **Erwartetes Ergebnis** | |
+| **Vorbedingung** | Eingeloggt. Saldo von Konto X bekannt. Historie von X und Y sichtbar. |
+| **Schritte** | 1. Buchung von X auf Y mit Betrag grösser als Saldo von X absenden. 2. Saldi von X und Y ansehen. 3. Historie von X und Y ansehen. |
+| **Erwartetes Ergebnis** | Fehlermeldung im UI. Beide Saldi unverändert. Kein neuer Eintrag in der Historie. |
 | **Tatsächliches Ergebnis** | |
 | **Status** | |
