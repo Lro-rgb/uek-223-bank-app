@@ -1,8 +1,8 @@
-﻿using Bank.Core.Models;
+using Bank.Core.Models;
 using Bank.DbAccess.Repositories;
+using Bank.Web.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Bank.Web.Controllers;
 
@@ -11,18 +11,21 @@ namespace Bank.Web.Controllers;
 public class BookingsController(IBookingRepository bookingRepository) : ControllerBase
 {
     [HttpPost]
-    [Authorize(Roles = "Administrators")]
-    public async Task<IActionResult> Post([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Booking booking)
+    [Authorize(Roles = "Administrators,Users")]
+    public IActionResult Post([FromBody] BookingDto booking)
     {
-        return await Task.Run(() =>
-        {
-            IActionResult response = Ok();
+        var result = bookingRepository.Book(booking.SourceId, booking.DestinationId, booking.Amount);
 
-            // Rufe "Book" im "BookingRepository" auf.
-            // Noch besser wäre es, wenn du einen Service verwenden würdest, der die Geschäftslogik enthält.
-            // Der Service würde dann das booking und ledger Repository verwenden. Die Transaktionen würden im Service verwaltet.
-            // Gib je nach Erfolg OK() oder Conflict() zurück
-            return response;
-        });
+        // Fehlermeldungen immer als { "message": "..." }, das Frontend zeigt error.error.message an (API-Vertrag in #6).
+        return result switch
+        {
+            BookingResult.Success => Ok(),
+            BookingResult.InvalidAmount => BadRequest(new { message = "Der Betrag muss grösser als 0 sein." }),
+            BookingResult.SameLedger => BadRequest(new { message = "Quelle und Ziel müssen verschiedene Konten sein." }),
+            BookingResult.LedgerNotFound => NotFound(new { message = "Konto nicht gefunden." }),
+            BookingResult.InsufficientFunds => Conflict(new { message = "Zu wenig Guthaben auf dem Quellkonto." }),
+            BookingResult.RetriesExhausted => Conflict(new { message = "Die Buchung ist wegen gleichzeitiger Zugriffe fehlgeschlagen. Bitte erneut versuchen." }),
+            _ => StatusCode(StatusCodes.Status500InternalServerError, new { message = "Unbekannter Fehler bei der Buchung." })
+        };
     }
 }
