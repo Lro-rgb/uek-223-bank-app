@@ -7,3 +7,37 @@
         </li>
     </ul>
 </div>
+
+<div class="booking-container">
+    <h2>Buchen</h2>
+    <form (ngSubmit)="book()">
+        <div>
+            <label for="sourceId">Von:</label>
+            <select id="sourceId" [(ngModel)]="sourceId" name="sourceId" required>
+                <option [ngValue]="null" disabled>Konto wählen</option>
+                <option *ngFor="let ledger of ledgers$ | async" [ngValue]="ledger.id">
+                    {{ ledger.name }} ({{ ledger.balance | currency }})
+                </option>
+            </select>
+        </div>
+        <div>
+            <label for="destinationId">Nach:</label>
+            <select id="destinationId" [(ngModel)]="destinationId" name="destinationId" required>
+                <option [ngValue]="null" disabled>Konto wählen</option>
+                <option *ngFor="let ledger of ledgers$ | async" [ngValue]="ledger.id">
+                    {{ ledger.name }} ({{ ledger.balance | currency }})
+                </option>
+            </select>
+        </div>
+        <div>
+            <label for="amount">Betrag:</label>
+            <input type="number" id="amount" [(ngModel)]="amount" name="amount" min="0.01" step="0.01" required />
+        </div>
+        <button type="submit" [disabled]="isSubmitting()">Buchen</button>
+    </form>
+    @if (message()) {
+        <div [class.error]="isError()" [class.success]="!isError()">
+            {{ message() }}
+        </div>
+    }
+</div>
