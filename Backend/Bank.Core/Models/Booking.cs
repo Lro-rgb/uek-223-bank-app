@@ -4,7 +4,7 @@ namespace Bank.Core.Models;
 
 public class Booking
 {
-    public const string CollectionName = "Booking";
+    public const string CollectionName = "Bookings";
         
     public int Id { get; set; }
         
@@ -15,6 +15,8 @@ public class Booking
     public int DestinationId { get; set; }
         
     public decimal Amount { get; set; }
+        
+    public DateTime CreatedAt { get; set; }
         
     public Ledger? Source { get; set; }
     public Ledger? Destination { get; set; }
