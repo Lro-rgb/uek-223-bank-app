@@ -13,4 +13,5 @@ public interface ILedgerRepository
     void Update(Ledger ledger, MySqlConnection conn, MySqlTransaction transaction);
     void Update(Ledger ledger);
     decimal? GetBalance(int ledgerId, MySqlConnection conn, MySqlTransaction transaction);
+    DeleteLedgerResult Delete(int id);
 }
