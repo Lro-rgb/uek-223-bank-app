@@ -32,4 +32,8 @@ export class LedgerService {
         };
         return this.http.post<void>(`${this.apiUrl}/bookings`, payload);
     }
+
+    deleteLedger(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/ledgers/${id}`);
+    }
 }

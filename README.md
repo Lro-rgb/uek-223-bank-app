@@ -77,9 +77,9 @@ Serializable (so wie in den Kursunterlagen) wäre auch sicher, sperrt aber schon
 | Löschen während einer Buchung | A prüft, ob Konto X leer ist (Saldo 0), B bucht gleichzeitig 50 auf X, danach löscht A das Konto. Die 50 sind verschwunden. | Löschen in einer Transaktion, X mit `SELECT ... FOR UPDATE` sperren und den Saldo auf der gesperrten Zeile prüfen. Buchen sperrt X ebenfalls, also wartet eine Operation auf die andere. |
 | Konto mit Saldo > 0 löschen | Das Geld auf dem Konto fehlt danach im Total. | Nur löschen, wenn der Saldo 0 ist, sonst 409 Conflict mit Meldung. |
 | Buchung auf ein gelöschtes Konto | B hat die Konten-Liste noch vor dem Löschen geladen und bucht auf X. | Backend prüft in der Buchungs-Transaktion, ob beide Konten existieren, sonst 404 (API-Vertrag #6). |
-| Konto mit Einträgen in der Historie | Der Fremdschlüssel `Bookings` → `Ledgers` (Restrict) verhindert das Löschen, ohne Behandlung gibt es einen DB-Fehler (500). | Offen, mit Matti entscheiden: Löschen mit 409 und Meldung ablehnen oder Konto nur deaktivieren (Soft Delete), damit die Historie erhalten bleibt. |
+| Konto mit Einträgen in der Historie | Der Fremdschlüssel `Bookings` → `Ledgers` (Restrict) verhindert das Löschen, ohne Behandlung gibt es einen DB-Fehler (500). | Löschen mit 409 „Konto hat Buchungen“ ablehnen, die Historie bleibt erhalten. |
 
-Wo implementiert und Test: offen, folgt mit dem Feature.
+Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed, `SELECT ... FOR UPDATE`, Retry bei 1213/1205 wie beim Buchen), `DELETE /api/v1/Ledgers/{id}` nur für Administrators. Test: [Integrationstests IT-D1 bis IT-D4](docs/integrationstests.md).
 
 ## Links
 
@@ -90,6 +90,7 @@ Wo implementiert und Test: offen, folgt mit dem Feature.
 ## Tests
 
 - [Manuelle Testfälle](docs/manuelle-testfaelle.md)
+- [Integrationstests](docs/integrationstests.md)
 
 ## Unterlagen lokal bearbeiten
 
