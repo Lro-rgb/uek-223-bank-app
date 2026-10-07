@@ -22,6 +22,14 @@ public sealed class TestLedgers(string connectionString) : IDisposable
         return id;
     }
 
+    public void ClearName(int id)
+    {
+        using var conn = Open();
+        using var cmd = new MySqlCommand($"UPDATE {Ledger.CollectionName} SET name = NULL WHERE id=@Id", conn);
+        cmd.Parameters.AddWithValue("@Id", id);
+        cmd.ExecuteNonQuery();
+    }
+
     public decimal Balance(int id)
     {
         using var conn = Open();

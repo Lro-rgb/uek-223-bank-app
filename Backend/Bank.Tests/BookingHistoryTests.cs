@@ -65,5 +65,19 @@ public sealed class BookingHistoryTests(DatabaseFixture fixture) : IDisposable
         Assert.Equal(10, history[1].Amount);
     }
 
+    [Fact]
+    public void GetHistory_LedgerWithoutName_ReturnsEntryWithNullName()
+    {
+        var source = _ledgers.Create(100);
+        var destination = _ledgers.Create(0);
+        _repository.Book(source, destination, 10);
+        _ledgers.ClearName(source);
+
+        var entry = Assert.Single(_repository.GetHistory(destination)!);
+
+        Assert.Null(entry.SourceName);
+        Assert.NotNull(entry.DestinationName);
+    }
+
     public void Dispose() => _ledgers.Dispose();
 }

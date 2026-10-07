@@ -39,6 +39,7 @@ Getestet wird `BookingRepository.GetHistory()` in `BookingHistoryTests.cs`. Der 
 | IT-H2 | `GetHistory_RejectedBooking_DoesNotAppear` | Eine abgelehnte Buchung hinterlässt keinen Eintrag (A6, Massnahme 4). | Buchung 51 von Quelle mit 50 | `InsufficientFunds`, Historie beider Konten leer |
 | IT-H3 | `GetHistory_UnknownLedger_ReturnsNull` | Unbekanntes Konto wird erkannt. | ID `int.MaxValue` | `null` (Controller: 404 „Konto nicht gefunden.“) |
 | IT-H4 | `GetHistory_SeveralBookings_NewestFirst` | Neueste Buchung steht oben. | Buchung 10, danach 20 | Reihenfolge 20, 10 |
+| IT-H5 | `GetHistory_LedgerWithoutName_ReturnsEntryWithNullName` | Ein Konto ohne Namen (`name` = NULL) führt nicht zu einem Fehler 500. | Buchung, danach Name der Quelle auf NULL | Eintrag mit `SourceName` = null (Frontend zeigt „(ohne Name)“) |
 
 ## Unit-Tests ohne Datenbank
 
