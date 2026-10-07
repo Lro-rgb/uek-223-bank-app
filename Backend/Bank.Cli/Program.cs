@@ -15,6 +15,7 @@ var options = Options.Create(dbSettings); // this is needed to ensure compatabil
 services.AddSingleton(options);
 
 // Register services
+services.AddLogging(); // LedgerRepository loggt Retries beim Löschen
 services.AddTransient<IDatabaseSeeder, DatabaseSeeder>();
 services.AddTransient<ILedgerRepository, LedgerRepository>();
 services.AddTransient<IUserRepository, UserRepository>();

@@ -4,8 +4,14 @@
         <li *ngFor="let ledger of ledgers$ | async">
             <strong>{{ ledger.name }}</strong
             >: {{ ledger.balance | currency }}
+            <button type="button" (click)="deleteLedger(ledger)" [disabled]="deletingId() === ledger.id">Löschen</button>
         </li>
     </ul>
+    @if (deleteMessage()) {
+        <div [class.error]="deleteIsError()" [class.success]="!deleteIsError()">
+            {{ deleteMessage() }}
+        </div>
+    }
 </div>
 
 <div class="booking-container">

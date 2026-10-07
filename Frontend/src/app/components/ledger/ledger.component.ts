@@ -24,6 +24,9 @@ export class LedgerComponent implements OnInit {
     public message = signal('');
     public isError = signal(false);
     public isSubmitting = signal(false);
+    public deleteMessage = signal('');
+    public deleteIsError = signal(false);
+    public deletingId = signal<number | null>(null);
 
     constructor(
         private ledgerService: LedgerService,
@@ -84,12 +87,50 @@ export class LedgerComponent implements OnInit {
             });
     }
 
+    public deleteLedger(ledger: Ledger): void {
+        if (!confirm(`Konto "${ledger.name}" wirklich löschen?`)) {
+            return;
+        }
+
+        this.deletingId.set(ledger.id);
+        this.deleteMessage.set('');
+
+        this.ledgerService
+            .deleteLedger(ledger.id)
+            .pipe(
+                finalize(() => this.deletingId.set(null)),
+                takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe({
+                next: () => {
+                    this.showDeleteMessage(`Konto "${ledger.name}" gelöscht.`, false);
+                    this.loadLedgers();
+                },
+                error: (error: HttpErrorResponse) => {
+                    console.error('Delete error', error);
+                    this.showDeleteMessage(
+                        this.toErrorMessage(error, 'Löschen fehlgeschlagen.', 'Keine Berechtigung zum Löschen.'),
+                        true,
+                    );
+                },
+            });
+    }
+
     private showMessage(text: string, isError: boolean): void {
         this.message.set(text);
         this.isError.set(isError);
     }
 
-    private toErrorMessage(error: HttpErrorResponse): string {
+    private showDeleteMessage(text: string, isError: boolean): void {
+        this.deleteMessage.set(text);
+        this.deleteIsError.set(isError);
+    }
+
+    private toErrorMessage(
+        error: HttpErrorResponse,
+        fallback = 'Buchung fehlgeschlagen.',
+        forbidden = 'Keine Berechtigung für diese Buchung.',
+    ): string {
         const message = (error.error as { message?: string } | null)?.message;
         if (message) {
             return message;
@@ -98,8 +139,8 @@ export class LedgerComponent implements OnInit {
             return 'Server nicht erreichbar. Bitte später erneut versuchen.';
         }
         if (error.status === 401 || error.status === 403) {
-            return 'Keine Berechtigung für diese Buchung.';
+            return forbidden;
         }
-        return 'Buchung fehlgeschlagen.';
+        return fallback;
     }
 }

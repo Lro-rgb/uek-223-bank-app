@@ -1,12 +1,16 @@
 using System.Data;
 using Bank.Core.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MySqlConnector;
 
 namespace Bank.DbAccess.Repositories;
 
-public class LedgerRepository(IOptions<DatabaseSettings> databaseSettings) : ILedgerRepository
+public class LedgerRepository(IOptions<DatabaseSettings> databaseSettings, ILogger<LedgerRepository> logger) : ILedgerRepository
 {
+    // Anzahl Versuche bei Deadlock (1213) oder Lock-Wait-Timeout (1205), wie in BookingRepository.Book().
+    public const int MaxDeleteAttempts = 3;
+
     private readonly DatabaseSettings _databaseSettings = databaseSettings.Value;
 
     public void Book(decimal amount, Ledger from, Ledger to)
@@ -166,5 +170,75 @@ public class LedgerRepository(IOptions<DatabaseSettings> databaseSettings) : ILe
         }
 
         return null;
+    }
+
+    public DeleteLedgerResult Delete(int id)
+    {
+        for (var attempt = 1; attempt <= MaxDeleteAttempts; attempt++)
+        {
+            try
+            {
+                return TryDelete(id);
+            }
+            catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.LockDeadlock or MySqlErrorCode.LockWaitTimeout)
+            {
+                // Die Transaktion wurde von der DB abgebrochen und automatisch zurückgerollt. Das Löschen wird neu gestartet.
+                logger.LogWarning("Löschen von Konto {Id} Versuch {Attempt}/{MaxAttempts} fehlgeschlagen ({ErrorCode}).",
+                    id, attempt, MaxDeleteAttempts, ex.ErrorCode);
+            }
+        }
+
+        logger.LogError("Löschen von Konto {Id} nach {MaxAttempts} Versuchen abgebrochen.", id, MaxDeleteAttempts);
+        return DeleteLedgerResult.RetriesExhausted;
+    }
+
+    private DeleteLedgerResult TryDelete(int id)
+    {
+        using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
+        conn.Open();
+        // Read Committed reicht wie beim Buchen, weil das Konto mit FOR UPDATE gesperrt wird (siehe README, Zusatz-Feature 1).
+        using var transaction = conn.BeginTransaction(IsolationLevel.ReadCommitted);
+
+        // Book() sperrt das Konto ebenfalls, eine laufende Buchung und das Löschen warten also aufeinander.
+        decimal? balance;
+        using (var cmd = new MySqlCommand($"SELECT balance FROM {Ledger.CollectionName} WHERE id=@Id FOR UPDATE", conn, transaction))
+        {
+            cmd.Parameters.AddWithValue("@Id", id);
+            var result = cmd.ExecuteScalar();
+            balance = result is null or DBNull ? null : Convert.ToDecimal(result);
+        }
+
+        if (balance is null)
+        {
+            transaction.Rollback();
+            return DeleteLedgerResult.LedgerNotFound;
+        }
+
+        // Sonst würde das Geld auf dem Konto im Total fehlen.
+        if (balance != 0)
+        {
+            transaction.Rollback();
+            return DeleteLedgerResult.HasBalance;
+        }
+
+        // Die Historie soll erhalten bleiben, der Fremdschlüssel Bookings -> Ledgers würde das Löschen sonst mit einem DB-Fehler abbrechen.
+        using (var cmd = new MySqlCommand($"SELECT COUNT(*) FROM {Booking.CollectionName} WHERE SourceId=@Id OR DestinationId=@Id", conn, transaction))
+        {
+            cmd.Parameters.AddWithValue("@Id", id);
+            if (Convert.ToInt32(cmd.ExecuteScalar()) > 0)
+            {
+                transaction.Rollback();
+                return DeleteLedgerResult.HasBookings;
+            }
+        }
+
+        using (var cmd = new MySqlCommand($"DELETE FROM {Ledger.CollectionName} WHERE id=@Id", conn, transaction))
+        {
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.ExecuteNonQuery();
+        }
+
+        transaction.Commit();
+        return DeleteLedgerResult.Success;
     }
 }
