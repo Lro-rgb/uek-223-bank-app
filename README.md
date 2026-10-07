@@ -26,6 +26,24 @@ docker compose up -d
 
 Danach `Bank.Web` neu starten.
 
+## Starten
+
+Voraussetzungen: Docker, .NET 9 SDK und Node 22. Die Befehle laufen im Hauptordner des Repos, nach dem Setup oben.
+
+```
+docker compose up -d                       # Datenbank
+dotnet run --project Backend/Bank.Web      # Backend auf http://localhost:5000
+cd Frontend
+npm install
+npm start                                  # Frontend auf http://localhost:4200
+```
+
+Backend und Frontend laufen je in einem eigenen Terminal.
+
+Tests: `dotnet test Backend/Bank.Tests`. Dafür muss die DB laufen, Bank.Web nicht. Details in den [Integrationstests](docs/integrationstests.md).
+
+Login: `admin` (Rolle Administrators) und `testuser` (Rolle Users), die Passwörter stehen in `Backend/Bank.DbAccess/DatabaseSeeder.cs`.
+
 ## Analyse Mehrbenutzeranforderungen
 
 ### Ablauf einer Buchung
@@ -59,8 +77,8 @@ Läuft das ohne Transaktion, kann zwischen jedem Schritt ein anderer User diesel
 |---|---|---|---|
 | Transaktion mit Isolationslevel (Buchung als eine Einheit) | Halbe Buchung | `BookingRepository.TryBook()`: eine Verbindung, `BeginTransaction(IsolationLevel.ReadCommitted)`, `Commit()` erst nach beiden Updates und dem Historien-Eintrag, sonst `Rollback()` | IT-B1, IT-B6 ([Integrationstests](docs/integrationstests.md)), NBomber Prüfung a) Total vorher = Total nachher |
 | Saldo-Prüfung in der Transaktion mit `SELECT ... FOR UPDATE` | Saldo unter 0, Lost Update | `BookingRepository.SelectBalanceForUpdate()` sperrt beide Konten, die Prüfung `sourceBalance < amount` läuft danach in `TryBook()` auf der gesperrten Zeile | IT-B2, IT-B3, **IT-B5** (zwei gleichzeitige Buchungen: mit `FOR UPDATE` grün, ohne rot), IT-B6, NBomber Prüfung b) kein Saldo unter 0, TF-05, TF-06 |
-| Retry-Schleife bei Deadlock (1213) oder Lock-Wait-Timeout (1205), feste Sperr-Reihenfolge | Abgebrochene Transaktionen gehen verloren | `BookingRepository.Book()`: Schleife mit `MaxAttempts = 3`, `IsTransient()` erkennt 1213/1205, jeder Versuch wird geloggt, danach 409. Sperr-Reihenfolge in `TryBook()` (`Math.Min` vor `Math.Max`) | IT-B6 (2000 parallele Buchungen ohne Fehler, Total gleich), NBomber Prüfung c) keine 5xx, TF-08 |
-| Historien-Eintrag (Tabelle `Bookings`) in derselben Transaktion wie die beiden Saldo-Updates. Keine Buchung ohne Eintrag, kein Eintrag ohne Buchung, auch bei Retry und Rollback. | Historie und Kontostände passen nicht zusammen (z.B. Eintrag einer zurückgerollten Buchung) | `BookingRepository.InsertBooking()` innerhalb von `TryBook()` vor dem `Commit()`, Anzeige über `BookingRepository.GetHistory()` (Zusatz-Feature 2) | IT-B4, IT-B6 (Anzahl Erfolge = Anzahl Einträge), IT-H1, IT-H2, NBomber Prüfung d), TF-09 |
+| Retry-Schleife bei Deadlock (1213) oder Lock-Wait-Timeout (1205), feste Sperr-Reihenfolge | Abgebrochene Transaktionen gehen verloren | `BookingRepository.Book()`: Schleife mit `MaxAttempts = 3`, `IsTransient()` erkennt 1213/1205, fehlgeschlagene Versuche (1213/1205) werden als Warnung geloggt, das Aufgeben als Fehler, danach 409. Sperr-Reihenfolge in `TryBook()` (`Math.Min` vor `Math.Max`) | IT-B6 (2000 parallele Buchungen: Total gleich, kein Saldo unter 0, Erfolge = Einträge, `RetriesExhausted` wird nur gezählt), NBomber Prüfung c) keine 5xx, TF-08 |
+| Historien-Eintrag (Tabelle `Bookings`) in derselben Transaktion wie die beiden Saldo-Updates. Keine Buchung ohne Eintrag, kein Eintrag ohne Buchung, auch bei Retry und Rollback. | Historie und Kontostände passen nicht zusammen (z.B. Eintrag einer zurückgerollten Buchung) | `BookingRepository.InsertBooking()` innerhalb von `TryBook()` vor dem `Commit()`, Anzeige über `BookingRepository.GetHistory()` (Zusatz-Feature 2) | IT-B4, IT-B6 (Anzahl Erfolge = Anzahl Einträge), IT-H1, IT-H2, NBomber Prüfung d) und d2), TF-09 |
 
 ### Isolationslevel für Buchen
 
@@ -94,6 +112,25 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 - [Manuelle Testfälle](docs/manuelle-testfaelle.md)
 - [Integrationstests](docs/integrationstests.md)
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
+
+### Welche Tests die Transaktionssicherheit prüfen
+
+Massnahmen 1–4 siehe [Massnahmen](#massnahmen). Wie die Integrationstests gestartet werden, steht in den [Integrationstests](docs/integrationstests.md), der Lasttest unten unter [Lasttest Buchungen](#lasttest-buchungen-nbomber).
+
+| Test | Was er prüft | Massnahme |
+|---|---|---|
+| IT-B5 mit `FOR UPDATE` | Zwei gleichzeitige Buchungen über 80 von einem Konto mit 100, die erste wird nach der Saldo-Prüfung angehalten: Die zweite wartet auf die Sperre und wird abgelehnt, Saldo 20, 1 Eintrag. | 2 |
+| IT-B5 ohne `FOR UPDATE` | Gegenprobe: `FOR UPDATE` testweise entfernt, der Test wird rot (Saldo -60). Die Sperre ist die Ursache, nicht der Zufall. | 2 |
+| IT-B6 | 20 parallele User × 100 Buchungen zwischen 2 Konten: Total gleich, kein Saldo unter 0, Anzahl Erfolge = Anzahl Einträge. `RetriesExhausted` wird nur gezählt. | 1, 2, 3, 4 |
+| IT-H2 | Abgelehnte Buchung (zu wenig Saldo) hinterlässt keinen Historien-Eintrag. | 4 |
+| IT-D1–D4 | Konto löschen in einer Transaktion mit `FOR UPDATE`: nur mit Saldo 0 und ohne Buchungen, sonst 409, unbekanntes Konto 404. Kein Geld verschwindet aus dem Total. | Zusatz-Feature 1, wie 1 und 2 |
+| Lasttest a) | Total vorher = Total nachher nach 1500 parallelen Buchungen über die API. | 1, 2 |
+| Lasttest b) | Kein Konto unter 0. | 2 |
+| Lasttest c) | Keine 5xx unter paralleler Last. | 3 |
+| Lasttest d) | Neue Booking-IDs = Anzahl 200er. | 4 |
+| Lasttest d2) | Jede 200er-Buchung hat genau einen Eintrag (Quelle, Ziel, Betrag), keine 409 hat einen. | 4 |
+| TF-08 | Explorativ: zwei Browser und 20 gleichzeitige `curl`-Buchungen vom selben Konto, kein Saldo unter 0, Total gleich, keine 500. | 2, 3 |
+| TF-09 | Abgelehnte Buchung im Frontend: Saldi unverändert, kein neuer Eintrag in der Historie. | 4 |
 
 ### Lasttest Buchungen (NBomber)
 
