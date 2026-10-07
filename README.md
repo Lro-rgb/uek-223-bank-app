@@ -97,7 +97,7 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 
 ### Lasttest Buchungen (NBomber)
 
-`Backend/Bank.Tests.Loadtest.Cli` loggt sich als `admin` ein, liest alle Konten und schickt dann 30 Sekunden lang 50 Buchungen pro Sekunde an `POST /api/v1/bookings`. Jede Buchung geht von einem zufälligen Konto auf ein anderes, mit einem Betrag zwischen 1 und 500. Danach vergleicht das Programm die Konten mit dem Stand vorher. Last und Beträge sind als Konstanten oben in `Program.cs` einstellbar.
+`Backend/Bank.Tests.Loadtest.Cli` loggt sich als `admin` ein, liest alle Konten und schickt dann 30 Sekunden lang 50 Buchungen pro Sekunde an `POST /api/v1/bookings`. Jede Buchung geht von einem zufälligen Konto auf ein anderes, mit einem Betrag zwischen 1 und 500. Danach vergleicht das Programm die Konten mit dem Stand vorher und holt über `GET /api/v1/Bookings?ledgerId=` die Historie aller Konten vor und nach dem Lauf (jede Booking-ID nur einmal, weil eine Buchung bei Quelle und Ziel steht). Während des Laufs darf niemand sonst buchen. Last und Beträge sind als Konstanten oben in `Program.cs` einstellbar.
 
 Starten (DB und Bank.Web müssen laufen):
 
@@ -113,8 +113,8 @@ Der HTML-Report landet in `booking_reports/` (nicht im Repo). Ergebnis vom 07.10
 Szenario: bookings
 Anfragen total: 1500
 Anfragen ok / fehlgeschlagen: 1500 / 0
-Durchschnittsdauer (ok): 9.26 ms
-Statuscodes: 200: 1431, 409: 69, 400: 0, 404: 0, 5xx: 0, andere: 0
+Durchschnittsdauer (ok): 8.88 ms
+Statuscodes: 200: 1409, 409: 91, 400: 0, 404: 0, 5xx: 0, andere: 0
 
 Total vorher:  10541.00
 Total nachher: 10541.00
@@ -122,14 +122,19 @@ Total nachher: 10541.00
 PASS a) Total vorher = Total nachher
 PASS b) kein Konto unter 0
 PASS c) keine 5xx
-TODO d) Anzahl 200er (1431) = Anzahl neue Einträge in Bookings: GET /api/v1/Bookings?ledgerId= fehlt noch
+PASS d) neue Booking-IDs (1409) = Anzahl 200er (1409)
+PASS d2) neue Einträge entsprechen genau den 200er-Buchungen (Quelle, Ziel, Betrag)
+     Jede der 1409 erfolgreichen Buchungen hat genau einen Eintrag, und es gibt keinen weiteren.
+     Also hat keine der 91 abgelehnten Buchungen (409) einen Eintrag hinterlassen (Massnahme 4).
 
 Ergebnis: PASS
 ```
 
-Die 409-Antworten sind keine Fehler im System: Das Backend lehnt die Buchung ab, weil das Quellkonto zu wenig Saldo hat oder weil nach 3 Versuchen bei Deadlock/Lock-Wait-Timeout aufgegeben wurde. Im Bank.Web-Log gab es in diesem Lauf keine Retries (1213/1205), die 69 Conflicts waren also alle „zu wenig Saldo“.
+Die 409-Antworten sind keine Fehler im System: Das Backend lehnt die Buchung ab, weil das Quellkonto zu wenig Saldo hat oder weil nach 3 Versuchen bei Deadlock/Lock-Wait-Timeout aufgegeben wurde. Im Bank.Web-Log gab es in diesem Lauf keine Retries (1213/1205), die 91 Conflicts waren also alle „zu wenig Saldo“.
 
-Belegte Massnahmen: Massnahme 2 (kein Saldo unter 0, Prüfung b), Massnahmen 1 und 2 (Total bleibt gleich, Prüfung a), Massnahme 3 (keine 5xx unter paralleler Last, Prüfung c). Prüfung d) für Massnahme 4 folgt mit der Buchungshistorie.
+d) allein zeigt nur, dass gleich viele neue Einträge wie 200er entstanden sind. d2) vergleicht zusätzlich Quelle, Ziel und Betrag jeder 200er-Anfrage mit den neuen Einträgen, damit kein Eintrag einer 409 einen fehlenden Eintrag einer 200 ausgleichen kann.
+
+Belegte Massnahmen: Massnahme 2 (kein Saldo unter 0, Prüfung b), Massnahmen 1 und 2 (Total bleibt gleich, Prüfung a), Massnahme 3 (keine 5xx unter paralleler Last, Prüfung c), Massnahme 4 (genau ein Historien-Eintrag pro erfolgreicher Buchung, keiner für abgelehnte, Prüfungen d und d2).
 
 ## Unterlagen lokal bearbeiten
 

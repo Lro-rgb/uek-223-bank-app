@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using NBomber.Contracts;
@@ -10,6 +11,11 @@ namespace Bank.Tests.Loadtest.Cli;
 public record LedgerDto(int Id, string? Name, decimal Balance);
 
 public record LoginResponse(string Token);
+
+public record BookingHistoryDto(int Id, int SourceId, int DestinationId, decimal Amount);
+
+// Eine Buchung ohne ID, damit die 200er-Anfragen mit den neuen Historien-Einträgen verglichen werden können
+public readonly record struct BookingKey(int SourceId, int DestinationId, decimal Amount);
 
 public static class Program
 {
@@ -43,6 +49,9 @@ public static class Program
     private static int _status5xx;
     private static int _statusOther;
 
+    // Quelle, Ziel und Betrag jeder Anfrage mit 200, für Prüfung d2)
+    private static readonly ConcurrentBag<BookingKey> SuccessfulBookings = [];
+
     public static async Task<int> Main(string[] args)
     {
         var scenarioName = args.Length > 0 ? args[0] : DefaultScenario;
@@ -62,6 +71,9 @@ public static class Program
         }
 
         var totalBefore = ledgersBefore.Sum(l => l.Balance);
+
+        // Historie aller Konten vor dem Lauf, für Prüfung d)
+        var historyBefore = scenarioName == "bookings" ? await GetHistory(jwt, ledgersBefore) : new Dictionary<int, BookingHistoryDto>();
 
         var runner = scenarioName == "bookings"
             ? NBomberRunner
@@ -109,9 +121,7 @@ public static class Program
         {
             passed &= Check("c) keine 5xx", _status5xx == 0 && _statusOther == 0,
                 $"5xx: {_status5xx}, andere: {_statusOther}");
-            // TODO: Sobald GET /api/v1/Bookings?ledgerId= existiert (Historie, Zusatz-Feature 2), die Einträge aller
-            // Konten vor und nach dem Lauf zählen und mit _status200 vergleichen (Beleg Massnahme 4).
-            Console.WriteLine($"TODO d) Anzahl 200er ({_status200}) = Anzahl neue Einträge in Bookings: GET /api/v1/Bookings?ledgerId= fehlt noch");
+            passed &= CheckHistory(historyBefore, await GetHistory(jwt, ledgersAfter));
         }
 
         Console.WriteLine();
@@ -123,6 +133,33 @@ public static class Program
     {
         Console.WriteLine($"{(ok ? "PASS" : "FAIL")} {name}{(ok || details == "" ? "" : $" ({details})")}");
         return ok;
+    }
+
+    // Massnahme 4: Jede erfolgreiche Buchung hat genau einen Historien-Eintrag, abgelehnte (409) haben keinen.
+    // Voraussetzung: Während des Laufs bucht niemand sonst.
+    private static bool CheckHistory(IReadOnlyDictionary<int, BookingHistoryDto> before, IReadOnlyDictionary<int, BookingHistoryDto> after)
+    {
+        var newEntries = after.Values.Where(e => !before.ContainsKey(e.Id)).ToList();
+
+        var countOk = Check($"d) neue Booking-IDs ({newEntries.Count}) = Anzahl 200er ({_status200})", newEntries.Count == _status200);
+
+        // Gleich viele reicht nicht ganz: Ein Eintrag aus einer 409 könnte einen fehlenden Eintrag einer 200 ausgleichen.
+        // Darum werden Quelle, Ziel und Betrag als Multimenge verglichen.
+        var expected = SuccessfulBookings.GroupBy(b => b).ToDictionary(g => g.Key, g => g.Count());
+        var actual = newEntries.GroupBy(e => new BookingKey(e.SourceId, e.DestinationId, e.Amount)).ToDictionary(g => g.Key, g => g.Count());
+        var mismatches = expected.Keys.Union(actual.Keys)
+            .Where(k => expected.GetValueOrDefault(k) != actual.GetValueOrDefault(k))
+            .ToList();
+        var matchOk = Check("d2) neue Einträge entsprechen genau den 200er-Buchungen (Quelle, Ziel, Betrag)", mismatches.Count == 0,
+            $"{mismatches.Count} Abweichungen, z.B. {string.Join(", ", mismatches.Take(3).Select(k => $"{k.SourceId}->{k.DestinationId} {k.Amount:F2}: erwartet {expected.GetValueOrDefault(k)}, Historie {actual.GetValueOrDefault(k)}"))}");
+
+        if (countOk && matchOk)
+        {
+            Console.WriteLine($"     Jede der {_status200} erfolgreichen Buchungen hat genau einen Eintrag, und es gibt keinen weiteren.");
+            Console.WriteLine($"     Also hat keine der {_status409} abgelehnten Buchungen (409) einen Eintrag hinterlassen (Massnahme 4).");
+        }
+
+        return countOk && matchOk;
     }
 
     private static async Task<string> Login(string username, string password)
@@ -155,6 +192,28 @@ public static class Program
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadFromJsonAsync<List<LedgerDto>>() ?? [];
+    }
+
+    // Historie aller Konten über GET /bookings?ledgerId=. Eine Buchung steht bei Quelle und Ziel,
+    // darum nach Booking-ID zusammengefasst (jede ID nur einmal).
+    private static async Task<IReadOnlyDictionary<int, BookingHistoryDto>> GetHistory(string jwt, IEnumerable<LedgerDto> ledgers)
+    {
+        var entries = new Dictionary<int, BookingHistoryDto>();
+        foreach (var ledger in ledgers)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/bookings?ledgerId={ledger.Id}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+
+            using var response = await HttpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            foreach (var entry in await response.Content.ReadFromJsonAsync<List<BookingHistoryDto>>() ?? [])
+            {
+                entries.TryAdd(entry.Id, entry);
+            }
+        }
+
+        return entries;
     }
 
     // Teilaufgabe 2: Lasttest auf /bankinfo, 100 Anfragen pro Sekunde während 30 Sekunden
@@ -208,6 +267,7 @@ public static class Program
                 {
                     case 200:
                         Interlocked.Increment(ref _status200);
+                        SuccessfulBookings.Add(new BookingKey(payload.sourceId, payload.destinationId, payload.amount));
                         return Response.Ok(statusCode: "200");
                     case 409:
                         Interlocked.Increment(ref _status409);
