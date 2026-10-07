@@ -1,0 +1,29 @@
+.history-container {
+    width: 500px;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.amount {
+    text-align: right;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+}

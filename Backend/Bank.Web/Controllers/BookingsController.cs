@@ -10,6 +10,21 @@ namespace Bank.Web.Controllers;
 [Route("api/v1/[controller]")]
 public class BookingsController(IBookingRepository bookingRepository) : ControllerBase
 {
+    [HttpGet]
+    [Authorize(Roles = "Administrators,Users")]
+    public IActionResult Get([FromQuery] int? ledgerId)
+    {
+        if (ledgerId is null)
+        {
+            return BadRequest(new { message = "Parameter ledgerId fehlt." });
+        }
+
+        var history = bookingRepository.GetHistory(ledgerId.Value);
+        return history is null
+            ? NotFound(new { message = "Konto nicht gefunden." })
+            : Ok(history);
+    }
+
     [HttpPost]
     [Authorize(Roles = "Administrators,Users")]
     public IActionResult Post([FromBody] BookingDto booking)
