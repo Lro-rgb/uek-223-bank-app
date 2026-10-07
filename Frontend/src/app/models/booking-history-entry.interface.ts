@@ -1,9 +1,9 @@
 export interface BookingHistoryEntry {
     id: number;
     sourceId: number;
-    sourceName: string;
+    sourceName: string | null;
     destinationId: number;
-    destinationName: string;
+    destinationName: string | null;
     amount: number;
     createdAt: string;
 }

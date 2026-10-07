@@ -12,14 +12,20 @@ public class BookingsController(IBookingRepository bookingRepository) : Controll
 {
     [HttpGet]
     [Authorize(Roles = "Administrators,Users")]
-    public IActionResult Get([FromQuery] int? ledgerId)
+    public IActionResult Get([FromQuery] string? ledgerId)
     {
-        if (ledgerId is null)
+        // Als string entgegennehmen und selbst parsen: Bei "abc" würde [ApiController] sonst eine ProblemDetails-Antwort
+        // ohne { message } liefern, die das Frontend nicht anzeigen kann.
+        if (string.IsNullOrWhiteSpace(ledgerId))
         {
             return BadRequest(new { message = "Parameter ledgerId fehlt." });
         }
+        if (!int.TryParse(ledgerId, out var id))
+        {
+            return BadRequest(new { message = "Parameter ledgerId muss eine Zahl sein." });
+        }
 
-        var history = bookingRepository.GetHistory(ledgerId.Value);
+        var history = bookingRepository.GetHistory(id);
         return history is null
             ? NotFound(new { message = "Konto nicht gefunden." })
             : Ok(history);

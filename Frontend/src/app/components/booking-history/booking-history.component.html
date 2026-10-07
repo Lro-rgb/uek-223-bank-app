@@ -28,8 +28,8 @@
                     @for (entry of entries(); track entry.id) {
                         <tr>
                             <td>{{ entry.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
-                            <td>{{ entry.sourceName }}</td>
-                            <td>{{ entry.destinationName }}</td>
+                            <td>{{ entry.sourceName ?? '(ohne Name)' }}</td>
+                            <td>{{ entry.destinationName ?? '(ohne Name)' }}</td>
                             <td class="amount">{{ entry.amount | currency }}</td>
                         </tr>
                     }

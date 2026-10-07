@@ -80,9 +80,9 @@ public class BookingRepository(IOptions<DatabaseSettings> databaseSettings, ILog
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                 SourceId = reader.GetInt32(reader.GetOrdinal("SourceId")),
-                SourceName = reader.GetString(reader.GetOrdinal("SourceName")),
+                SourceName = ReadNullableString(reader, "SourceName"),
                 DestinationId = reader.GetInt32(reader.GetOrdinal("DestinationId")),
-                DestinationName = reader.GetString(reader.GetOrdinal("DestinationName")),
+                DestinationName = ReadNullableString(reader, "DestinationName"),
                 Amount = reader.GetDecimal(reader.GetOrdinal("Amount")),
                 CreatedAt = DateTime.SpecifyKind(reader.GetDateTime(reader.GetOrdinal("CreatedAt")), DateTimeKind.Utc),
             });
@@ -162,6 +162,13 @@ public class BookingRepository(IOptions<DatabaseSettings> databaseSettings, ILog
         cmd.Parameters.AddWithValue("@Amount", amount);
         cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
         cmd.ExecuteNonQuery();
+    }
+
+    // Ledgers.name ist nullable (Ledger.Name ist string?), GetString würde bei NULL eine Exception werfen (500).
+    private static string? ReadNullableString(MySqlDataReader reader, string column)
+    {
+        var ordinal = reader.GetOrdinal(column);
+        return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
     }
 
     private static bool IsTransient(MySqlException ex) =>
