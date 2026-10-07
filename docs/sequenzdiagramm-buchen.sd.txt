@@ -1,0 +1,66 @@
+title Buchen
+
+actor User
+participant "LedgerComponent" as C
+participant "LedgerService /\nauthInterceptor" as S
+participant "BookingsController" as BC
+participant "BookingRepository" as R
+database "MariaDB" as DB
+
+User->C:Formular „Buchen“ absenden
+C->C:book(): Felder gesetzt? Betrag > 0?\nVon ≠ Nach?
+alt clientseitig ungültig
+C-->User:Fehlermeldung, kein Request
+else gültig
+C->C:isSubmitting = true
+C->S:book(sourceId, destinationId, amount)
+S->BC:POST /api/v1/Bookings\n{ sourceId, destinationId, amount }\nAuthorization: Bearer JWT
+alt kein/ungültiges Token oder falsche Rolle
+BC-->S:401 / 403 (ohne Body, [Authorize])
+else Rolle Administrators oder Users
+BC->R:Book(sourceId, destinationId, amount)
+R->R:BookingValidator.Validate()
+alt Betrag ≤ 0 oder Quelle = Ziel
+R-->BC:InvalidAmount / SameLedger
+BC-->S:400 { message }
+else Eingaben gültig
+loop Versuch 1..3 (MaxAttempts)
+R->DB:neue Verbindung, BEGIN (Read Committed)
+R->DB:SELECT balance … FOR UPDATE (kleinere ID)
+R->DB:SELECT balance … FOR UPDATE (grössere ID)
+alt Deadlock 1213 / Lock-Wait-Timeout 1205
+DB-->R:MySqlException, Transaktion zurückgerollt
+R->R:LogWarning, nächster Versuch
+else Konto nicht gefunden
+R->DB:ROLLBACK
+R-->BC:LedgerNotFound
+BC-->S:404 { message }
+else Saldo Quelle < Betrag
+R->DB:ROLLBACK
+R-->BC:InsufficientFunds
+BC-->S:409 { message }
+else Saldo reicht
+R->DB:UPDATE Ledgers balance - Betrag (Quelle)
+R->DB:UPDATE Ledgers balance + Betrag (Ziel)
+R->DB:INSERT Bookings\n(SourceId, DestinationId, Amount, CreatedAt)
+R->DB:COMMIT
+R-->BC:Success
+BC-->S:200
+end
+end
+opt 3 Versuche fehlgeschlagen
+R->R:LogError
+R-->BC:RetriesExhausted
+BC-->S:409 { message }
+end
+end
+end
+S-->C:Antwort
+C->C:finalize: isSubmitting = false
+alt 200
+C-->User:„Buchung erfolgreich.“, Betrag leeren
+C->S:loadLedgers(): GET /api/v1/ledgers
+else 4xx
+C-->User:error.error.message, sonst Fallback-Text
+end
+end

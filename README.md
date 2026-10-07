@@ -4,6 +4,21 @@ Gruppe: Matti & Luis
 
 Bank-App aus dem ÜK 223 (Backend, Frontend und Kursunterlagen). Doku und Fortschritt geben wir im LearningView ab.
 
+## Aufbau
+
+Eine Anfrage läuft immer gleich: Angular-Frontend → REST-API mit JWT → Controller → Repository → MariaDB. Die Transaktionen (Buchen, Konto löschen) liegen in den Repositories.
+
+| Teil | Ordner | Inhalt |
+|---|---|---|
+| Datenbank | `docker-compose.yml`, `db-init/` | MariaDB 11.6 in Docker. `db-init` legt beim ersten Start die Test-Datenbank `bank_test` an. |
+| Models | `Backend/Bank.Core` | Models (`Ledger`, `Booking`, `User`, Ergebnis-Enums) und Helfer (`BookingValidator`, `PasswordHelper`) |
+| Datenzugriff | `Backend/Bank.DbAccess` | `AppDbContext` (Tabellen), `DatabaseSeeder` (Testdaten und User), Repositories: `BookingRepository` (Buchen, Historie), `LedgerRepository` (Konten, Löschen), `UserRepository` |
+| REST-API | `Backend/Bank.Web` | Controller für Login, Ledgers, Bookings und BankInfo unter `/api/v1`, JWT-Login (`LoginService`), Rollen `Administrators` und `Users` |
+| Konsole | `Backend/Bank.Cli` | Konsolen-Übung aus dem Kurs (Multiuser-Problem ohne und mit Transaktionen) |
+| Tests | `Backend/Bank.Tests` | Integrationstests gegen `bank_test`, siehe [Integrationstests](docs/integrationstests.md) |
+| Lasttest | `Backend/Bank.Tests.Loadtest.Cli` | NBomber-Lasttest über die API, siehe [Lasttest Buchungen](#lasttest-buchungen-nbomber) |
+| Frontend | `Frontend/src/app` | Angular: `login` (Anmeldung), `ledger` (Kontenliste, Buchen, Löschen), `booking-history` (Historie pro Konto). Services `auth`, `ledger`, `booking` für die API, `authInterceptor` hängt das JWT an jede Anfrage. |
+
 ## Setup
 
 1. `.env.sample` nach `.env` kopieren und die Passwörter setzen. `MARIADB_USER` muss `bank_user` bleiben, weil `db-init/01-test-db.sql` diesem User die Rechte auf die Test-Datenbank `bank_test` gibt.
