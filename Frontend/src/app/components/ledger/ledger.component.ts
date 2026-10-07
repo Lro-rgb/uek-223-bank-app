@@ -6,13 +6,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, finalize } from 'rxjs';
+import { BookingHistoryComponent } from '../booking-history/booking-history.component';
 
 @Component({
     selector: 'app-ledger',
     templateUrl: './ledger.component.html',
     styleUrl: './ledger.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, BookingHistoryComponent],
 })
 export class LedgerComponent implements OnInit {
     public ledgers$ = new BehaviorSubject<Ledger[]>([]);

@@ -45,6 +45,52 @@ public class BookingRepository(IOptions<DatabaseSettings> databaseSettings, ILog
         return BookingResult.RetriesExhausted;
     }
 
+    public IReadOnlyList<BookingHistoryEntry>? GetHistory(int ledgerId)
+    {
+        using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
+        conn.Open();
+
+        using (var cmd = new MySqlCommand($"SELECT COUNT(*) FROM {Ledger.CollectionName} WHERE id=@Id", conn))
+        {
+            cmd.Parameters.AddWithValue("@Id", ledgerId);
+            if (Convert.ToInt32(cmd.ExecuteScalar()) == 0)
+            {
+                return null;
+            }
+        }
+
+        // Ein einzelnes SELECT liest einen konsistenten Stand: Eine laufende Buchung ist erst nach ihrem Commit sichtbar,
+        // dann aber Saldo und Historien-Eintrag zusammen (beides in derselben Transaktion, siehe Book()).
+        const string query =
+            $"SELECT b.Id, b.SourceId, s.name AS SourceName, b.DestinationId, d.name AS DestinationName, b.Amount, b.CreatedAt " +
+            $"FROM {Booking.CollectionName} b " +
+            $"JOIN {Ledger.CollectionName} s ON s.id = b.SourceId " +
+            $"JOIN {Ledger.CollectionName} d ON d.id = b.DestinationId " +
+            $"WHERE b.SourceId=@Id OR b.DestinationId=@Id " +
+            $"ORDER BY b.CreatedAt DESC, b.Id DESC";
+
+        using var historyCmd = new MySqlCommand(query, conn);
+        historyCmd.Parameters.AddWithValue("@Id", ledgerId);
+        using var reader = historyCmd.ExecuteReader();
+
+        var entries = new List<BookingHistoryEntry>();
+        while (reader.Read())
+        {
+            entries.Add(new BookingHistoryEntry
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                SourceId = reader.GetInt32(reader.GetOrdinal("SourceId")),
+                SourceName = reader.GetString(reader.GetOrdinal("SourceName")),
+                DestinationId = reader.GetInt32(reader.GetOrdinal("DestinationId")),
+                DestinationName = reader.GetString(reader.GetOrdinal("DestinationName")),
+                Amount = reader.GetDecimal(reader.GetOrdinal("Amount")),
+                CreatedAt = DateTime.SpecifyKind(reader.GetDateTime(reader.GetOrdinal("CreatedAt")), DateTimeKind.Utc),
+            });
+        }
+
+        return entries;
+    }
+
     private BookingResult TryBook(int sourceLedgerId, int destinationLedgerId, decimal amount)
     {
         using var conn = new MySqlConnection(_databaseSettings.ConnectionString);

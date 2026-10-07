@@ -1,0 +1,40 @@
+<div class="history-container">
+    <h2>Buchungshistorie</h2>
+    <label for="historyLedgerId">Konto:</label>
+    <select id="historyLedgerId" name="historyLedgerId" [ngModel]="selectedId()" (ngModelChange)="select($event)">
+        <option [ngValue]="null" disabled>Konto wählen</option>
+        <option *ngFor="let ledger of ledgers" [ngValue]="ledger.id">{{ ledger.name }}</option>
+    </select>
+
+    @if (isLoading()) {
+        <p>Lädt...</p>
+    }
+    @if (errorMessage()) {
+        <div class="error">{{ errorMessage() }}</div>
+    } @else if (loaded()) {
+        @if (entries().length === 0) {
+            <p>Keine Buchungen.</p>
+        } @else {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Von</th>
+                        <th>Nach</th>
+                        <th class="amount">Betrag</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (entry of entries(); track entry.id) {
+                        <tr>
+                            <td>{{ entry.createdAt | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+                            <td>{{ entry.sourceName }}</td>
+                            <td>{{ entry.destinationName }}</td>
+                            <td class="amount">{{ entry.amount | currency }}</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+</div>
