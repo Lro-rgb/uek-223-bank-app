@@ -90,6 +90,7 @@ Wo implementiert und Test: offen, folgt mit dem Feature.
 ## Tests
 
 - [Manuelle Testfälle](docs/manuelle-testfaelle.md)
+- [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
 
 ### Lasttest Buchungen (NBomber)
 
