@@ -26,7 +26,7 @@ Getestet wird `BookingRepository.Book()` in `BookingRepositoryTests.cs` und `Boo
 | IT-B3 | `Book_ExactBalance_LeavesSourceAtZero` | Grenzfall: genau den ganzen Saldo buchen. | Quelle 975, Betrag 975 | `Success`, Quelle 0, Ziel 1000 |
 | IT-B4 | `Book_Success_CreatesExactlyOneBookingEntry` | Jede Buchung erzeugt genau einen Historien-Eintrag (Massnahme 4). | Quelle 100, Betrag 40 | genau 1 Eintrag in `Bookings` |
 | IT-B5 | `Book_TwoBookingsAtSameTime_SecondSeesNewBalanceAndIsRejected` | Nachweis der Sperre (Massnahme 2), siehe unten. | Quelle 100, zwei Buchungen über je 80 gleichzeitig | erste `Success`, zweite `InsufficientFunds`, Quelle 20, 1 Eintrag |
-| IT-B6 | `Book_ParallelBookings_KeepTotalAndNoNegativeBalance` | Unter Last bleibt alles konsistent (Massnahmen 1–4). | 20 parallele User × 100 Buchungen zwischen 2 Konten mit je 100, Beträge 50–100 | Total unverändert, kein Saldo unter 0, Anzahl `Success` = Anzahl Einträge |
+| IT-B6 | `Book_ParallelBookings_KeepTotalAndNoNegativeBalance` | Unter Last bleibt alles konsistent (Massnahmen 1–4). | 20 parallele User × 100 Buchungen zwischen 2 Konten mit je 100, Beträge 50–100 | Total unverändert, kein Saldo unter 0, Anzahl `Success` = Anzahl Einträge, mindestens 1 `Success`. `RetriesExhausted` wird nur gezählt und ausgegeben, nicht als Fehler gewertet. |
 | IT-B7 | `Book_UnknownLedger_ReturnsNotFoundAndNothingChanges` | Buchung auf ein nicht (mehr) existierendes Konto wird sauber abgelehnt. | Ziel-ID `int.MaxValue` | `LedgerNotFound` (404), Quelle unverändert, kein Eintrag |
 
 ## Buchungshistorie (Zusatz-Feature 2)
