@@ -40,6 +40,8 @@ Betrag B wird von Konto Quelle auf Konto Ziel gebucht:
 6. Betrag von Ziel um B erhöhen
 7. Ziel in der DB ändern
 
+Wie der Ablauf im Code umgesetzt ist, zeigt das [Sequenzdiagramm Buchen](docs/sequenzdiagramm-buchen.md).
+
 Läuft das ohne Transaktion, kann zwischen jedem Schritt ein anderer User dieselben Konten lesen oder ändern. Genau dort entstehen die Probleme unten.
 
 ### Probleme
