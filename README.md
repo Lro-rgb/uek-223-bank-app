@@ -6,8 +6,8 @@ Bank-App aus dem ÜK 223 (Backend, Frontend und Kursunterlagen). Doku und Fortsc
 
 ## Setup
 
-1. `.env.sample` nach `.env` kopieren und die Passwörter setzen.
-2. Datenbank starten: `docker compose up -d`
+1. `.env.sample` nach `.env` kopieren und die Passwörter setzen. `MARIADB_USER` muss `bank_user` bleiben, weil `db-init/01-test-db.sql` diesem User die Rechte auf die Test-Datenbank `bank_test` gibt.
+2. Datenbank starten: `docker compose up -d`. Beim ersten Start legt `db-init` zusätzlich die Datenbank `bank_test` für die Integrationstests an.
 3. In `Backend/Bank.Web` und `Backend/Bank.Cli` jeweils `appsettings.sample.json` nach `appsettings.json` kopieren und den Connection-String mit den Werten aus der `.env` füllen:
    ```
    Server=localhost;Port=3306;Database=bank;User=bank_user;Password=<MARIADB_PASSWORD>;
@@ -16,6 +16,15 @@ Bank-App aus dem ÜK 223 (Backend, Frontend und Kursunterlagen). Doku und Fortsc
 4. Alles Weitere zu Backend und Frontend steht in den READMEs der jeweiligen Ordner.
 
 `.env` und `appsettings.json` sind im `.gitignore` und werden nicht committet.
+
+**Nach Änderungen an Tabellen oder Seed-Daten** (z.B. neue Spalte in einem Model) muss die lokale DB neu aufgebaut werden. Die App legt Tabellen nur an, wenn noch keine existieren (`EnsureCreated()`), und der Seed schreibt nur in leere Tabellen. `docker compose down -v` löscht dabei alle lokalen Daten:
+
+```
+docker compose down -v
+docker compose up -d
+```
+
+Danach `Bank.Web` neu starten.
 
 ## Analyse Mehrbenutzeranforderungen
 
@@ -56,6 +65,21 @@ Läuft das ohne Transaktion, kann zwischen jedem Schritt ein anderer User diesel
 Wir sperren beide Konten mit `SELECT ... FOR UPDATE` (kleinere ID zuerst) und nutzen dafür Read Committed, das wir beim Start der Transaktion explizit setzen (MariaDB-Default ist Repeatable Read). Die Sperre sorgt dafür, dass niemand anders das Konto zwischen Lesen und Schreiben ändert, und durch die feste Reihenfolge gibt es kaum Deadlocks.
 
 Serializable (so wie in den Kursunterlagen) wäre auch sicher, sperrt aber schon beim normalen Lesen. Wenn zwei User dasselbe Konto lesen und danach schreiben wollen, gibt es bei gleichzeitigen Buchungen auf dasselbe Konto häufig einen Deadlock, und die Retry-Schleife muss oft neu starten.
+
+### Zusatz-Features und Transaktionssicherheit
+
+**Buchungshistorie (Zusatz-Feature 2):** Die Historie wird nur gelesen. Ein Eintrag entsteht ausschliesslich in der Buchungs-Transaktion (Massnahme 4). Eine zurückgerollte oder abgelehnte Buchung hinterlässt deshalb keinen Eintrag.
+
+**Konto löschen (Zusatz-Feature 1):**
+
+| Problem | Beispiel mit 2 Usern | Lösung |
+|---|---|---|
+| Löschen während einer Buchung | A prüft, ob Konto X leer ist (Saldo 0), B bucht gleichzeitig 50 auf X, danach löscht A das Konto. Die 50 sind verschwunden. | Löschen in einer Transaktion, X mit `SELECT ... FOR UPDATE` sperren und den Saldo auf der gesperrten Zeile prüfen. Buchen sperrt X ebenfalls, also wartet eine Operation auf die andere. |
+| Konto mit Saldo > 0 löschen | Das Geld auf dem Konto fehlt danach im Total. | Nur löschen, wenn der Saldo 0 ist, sonst 409 Conflict mit Meldung. |
+| Buchung auf ein gelöschtes Konto | B hat die Konten-Liste noch vor dem Löschen geladen und bucht auf X. | Backend prüft in der Buchungs-Transaktion, ob beide Konten existieren, sonst 404 (API-Vertrag #6). |
+| Konto mit Einträgen in der Historie | Der Fremdschlüssel `Bookings` → `Ledgers` (Restrict) verhindert das Löschen, ohne Behandlung gibt es einen DB-Fehler (500). | Offen, mit Matti entscheiden: Löschen mit 409 und Meldung ablehnen oder Konto nur deaktivieren (Soft Delete), damit die Historie erhalten bleibt. |
+
+Wo implementiert und Test: offen, folgt mit dem Feature.
 
 ## Links
 

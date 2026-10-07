@@ -122,3 +122,30 @@ A1–A4 stammen aus den Kursunterlagen (Testing → Testfälle), A5 ist eine eig
 | **Erwartetes Ergebnis** | Fehlermeldung im UI. Beide Saldi unverändert. Kein neuer Eintrag in der Historie. |
 | **Tatsächliches Ergebnis** | |
 | **Status** | |
+
+## Anleitung exploratives Testen
+
+Für Fehler ohne klare Ein- und Ausgabe, vor allem bei parallelen Zugriffen. Pro Session ca. 20 Minuten, Beobachtungen direkt notieren (was gemacht, was passiert, Screenshot bei Auffälligkeiten).
+
+### Zu testende Anforderungen
+
+- Parallele Zugriffe und ihre Auswirkung auf die Datenintegrität (A2, A4, A6)
+- Fehlerhafte und manipulierte Eingaben an Formular und API (A5)
+- Unvorhergesehene Benutzeraktionen (Doppelklick, Zurück-Button, abgelaufenes Token)
+- Rechte der Rollen (A1, A3)
+
+### Rahmenbedingungen
+
+- Rolle: einmal als `admin`, einmal als `testuser`
+- Daten: Total und Saldi vor jeder Session notieren, mindestens ein Konto mit Saldo 0 („Testkonto leer“)
+- API unter Last: Backend läuft lokal, parallel kann der NBomber-Lasttest laufen
+- Werkzeuge: Browser mit Network-Tab, Bruno oder Swagger für direkte API-Aufrufe
+
+### Testideen
+
+- Mehrere Benutzer buchen gleichzeitig vom selben Konto (2 Browser, Bruno-Runner oder Skript), danach Total und Saldi prüfen
+- Mit Bruno ungültige Werte senden: negativer Betrag, Betrag 0, sehr grosser Betrag, Text statt Zahl, nicht existierende Konto-ID, fehlendes Feld
+- Buchen ohne Token, mit manipuliertem Token und als `testuser` auf Endpunkte für Administrators
+- „Buchen“ mehrmals schnell hintereinander klicken: entsteht die Buchung nur einmal?
+- Konten-Liste in Tab 1 offen lassen, in Tab 2 buchen, dann in Tab 1 mit veralteten Saldi buchen
+- Backend während einer Buchung stoppen: verständliche Meldung im UI, kein halber Zustand in der DB
