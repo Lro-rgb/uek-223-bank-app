@@ -85,7 +85,7 @@ Das sind lokale Testdaten, keine echten Zugangsdaten. Anmelden unter `http://loc
 - **Konto löschen (Zusatz-Feature 1):** nur als `admin`, nur bei Saldo 0 und ohne Buchungen, sonst 409 mit Meldung. Zum Ausprobieren: „Testkonto leer“ auf frischer DB.
 - **Buchungshistorie (Zusatz-Feature 2):** unter „Buchungshistorie“ ein Konto im Dropdown wählen. Die Liste zeigt die neueste Buchung zuoberst und aktualisiert sich nach jeder Buchung.
 
-**Bekannte Einschränkungen:** Es gibt keinen Logout. `testuser` sieht die Löschen-Buttons und bekommt beim Klick 403 („Keine Berechtigung zum Löschen.“).
+**Bekannte Einschränkungen:** Es gibt keinen Logout. `testuser` sieht die Löschen-Buttons und bekommt beim Klick 403 („Keine Berechtigung zum Löschen.“). `auth.interceptor.ts` gibt das JWT bei jedem Request mit `console.log` in der Browser-Konsole aus.
 
 ## Analyse Mehrbenutzeranforderungen
 

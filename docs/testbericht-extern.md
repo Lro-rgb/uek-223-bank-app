@@ -302,3 +302,12 @@ Alle acht Befunde sind in Issue #19 behoben, die Transaktionslogik blieb unverä
 | F6 | `InvalidModelStateResponseFactory` gibt auch Bindungsfehler als `{ message }` zurück | `"abc"`, `1e30` und leerer Body → 400 `{ message }` |
 | F7 | `BookingValidator` und Frontend lehnen mehr als 2 Nachkommastellen ab (400) | UT-V4, `0.0000001` → 400, `0.01` → 200 |
 | F8 | Lint-Fehler behoben, CI-Jobs `frontend` (lint, build) und `backend-test` (`dotnet test` mit MariaDB) | Pipeline im MR |
+
+## Besprechung der Ergebnisse
+
+| | |
+|---|---|
+| **Datum** | 08.10.2026 |
+| **Teilnehmende** | Luis Rosado, Matti Näf (Team Matti & Luis); Noel Kohn, Maksym Shepetko, Henry Roesler Schellenberg (externes Testteam) |
+| **Ergebnis** | Transaktionssicherheit bestätigt (20/20 Tests, Lasttest PASS, eigene Nebenläufigkeitstests ohne Fehler), 8 Befunde ausserhalb der Transaktionslogik, davon 1 kritisch (F1) |
+| **Entscheid** | Alle Befunde F1–F8 werden umgesetzt (Issue #19, MR !22). Bewusst offen bleiben: kein Logout, `testuser` sieht die Löschen-Buttons (das Backend sperrt mit 403) und das `console.log` mit dem Token. Alle drei sind im README unter „Bekannte Einschränkungen“ dokumentiert. |

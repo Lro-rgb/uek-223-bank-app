@@ -43,7 +43,7 @@ public class BookingsController(IBookingRepository bookingRepository) : Controll
             BookingResult.Success => Ok(),
             BookingResult.InvalidAmount => BadRequest(new { message = "Der Betrag muss grösser als 0 sein." }),
             BookingResult.TooManyDecimals => BadRequest(new { message = "Der Betrag darf höchstens 2 Nachkommastellen haben." }),
-            BookingResult.SameLedger =>BadRequest(new { message = "Quelle und Ziel müssen verschiedene Konten sein." }),
+            BookingResult.SameLedger => BadRequest(new { message = "Quelle und Ziel müssen verschiedene Konten sein." }),
             BookingResult.LedgerNotFound => NotFound(new { message = "Konto nicht gefunden." }),
             BookingResult.InsufficientFunds => Conflict(new { message = "Zu wenig Guthaben auf dem Quellkonto." }),
             BookingResult.RetriesExhausted => Conflict(new { message = "Die Buchung ist wegen gleichzeitiger Zugriffe fehlgeschlagen. Bitte erneut versuchen." }),
