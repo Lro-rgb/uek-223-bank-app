@@ -81,7 +81,7 @@ Das sind lokale Testdaten, keine echten Zugangsdaten. Anmelden unter `http://loc
 
 ## Funktionen
 
-- **Buchen (Pflicht):** als `admin` und als `testuser`. Konto „Von“, Konto „Nach“ und Betrag wählen. Zu wenig Saldo gibt 409 mit Meldung, Betrag ≤ 0 oder gleiche Konten 400.
+- **Buchen (Pflicht):** als `admin` und als `testuser`. Konto „Von“, Konto „Nach“ und Betrag wählen. Zu wenig Saldo gibt 409 mit Meldung, Betrag ≤ 0, mehr als 2 Nachkommastellen oder gleiche Konten 400.
 - **Konto löschen (Zusatz-Feature 1):** nur als `admin`, nur bei Saldo 0 und ohne Buchungen, sonst 409 mit Meldung. Zum Ausprobieren: „Testkonto leer“ auf frischer DB.
 - **Buchungshistorie (Zusatz-Feature 2):** unter „Buchungshistorie“ ein Konto im Dropdown wählen. Die Liste zeigt die neueste Buchung zuoberst und aktualisiert sich nach jeder Buchung.
 
@@ -166,7 +166,7 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 
 - [Manuelle Testfälle (mit Durchführungsprotokoll)](docs/manuelle-testfaelle.md)
 - [Testprotokoll für externe Tester](docs/testprotokoll-extern.md)
-- [Testbericht des externen Teams](docs/testbericht-extern.md) vom 08.10.2026: Befunde F1–F4 behoben (#19), F5–F8 (klein) noch offen
+- [Testbericht des externen Teams](docs/testbericht-extern.md) vom 08.10.2026: alle Befunde F1–F8 behoben (#19)
 - [Integrationstests](docs/integrationstests.md)
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
 

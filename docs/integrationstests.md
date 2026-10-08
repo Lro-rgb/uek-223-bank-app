@@ -10,7 +10,7 @@ Ausführen: `dotnet test Backend/Bank.Tests`
 |---|---|---|
 | 07.10.2026 | `main` 293e8fb, frische DB | 20/20 bestanden |
 | 08.10.2026 | `main` 0f7a6ed | 20/20 bestanden |
-| 08.10.2026 | Branch `fix/19-externer-test` (Befunde F1–F4 aus dem [externen Testbericht](testbericht-extern.md)) | 24/24 bestanden |
+| 08.10.2026 | Branch `fix/19-externer-test` (Befunde F1–F8 aus dem [externen Testbericht](testbericht-extern.md)) | 26/26 bestanden |
 
 ## Konten lesen und ändern
 
@@ -69,6 +69,7 @@ Getestet wird `BookingRepository.GetHistory()` in `BookingHistoryTests.cs`. Der 
 | UT-V1 | `Validate_AmountNotPositive_ReturnsInvalidAmount` | Betrag 0 und -50 | `InvalidAmount` (400) |
 | UT-V2 | `Validate_SameLedger_ReturnsSameLedger` | Quelle = Ziel | `SameLedger` (400) |
 | UT-V3 | `Validate_ValidInput_ReturnsSuccess` | Quelle 1, Ziel 2, Betrag 0.01 | `Success` |
+| UT-V4 | `Validate_MoreThanTwoDecimals_ReturnsTooManyDecimals` | Betrag 0.0000001 und 10.005 (externer Test, F7) | `TooManyDecimals` (400 „Der Betrag darf höchstens 2 Nachkommastellen haben.“) |
 
 ## Nachweis Transaktionssicherheit (IT-B5)
 

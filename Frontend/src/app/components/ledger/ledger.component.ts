@@ -65,6 +65,10 @@ export class LedgerComponent implements OnInit {
             this.showMessage('Der Betrag muss grösser als 0 sein.', true);
             return;
         }
+        if (Math.round(this.amount * 100) / 100 !== this.amount) {
+            this.showMessage('Der Betrag darf höchstens 2 Nachkommastellen haben.', true);
+            return;
+        }
         if (this.sourceId === this.destinationId) {
             this.showMessage('Von und Nach müssen verschiedene Konten sein.', true);
             return;

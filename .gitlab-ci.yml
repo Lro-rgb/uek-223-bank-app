@@ -1,5 +1,35 @@
 image: rust:latest
 
+stages:
+  - test
+  - deploy
+
+# Lint und Build des Frontends bei jedem Push (externer Test, F8: ein ungenutzter AuthGuard war nur im Lint sichtbar).
+frontend:
+  stage: test
+  image: node:22
+  script:
+    - cd Frontend
+    - npm ci
+    - npm run lint
+    - npm run build
+
+# Integrations- und Unit-Tests gegen eine eigene MariaDB nur für die CI. Die Zugangsdaten gelten nur in diesem Job.
+backend-test:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  services:
+    - name: mariadb:11.6.2
+      alias: mariadb
+  variables:
+    MARIADB_ROOT_PASSWORD: ci_root_pw
+    MARIADB_DATABASE: bank_test
+    MARIADB_USER: bank_user
+    MARIADB_PASSWORD: ci_pw
+    BANK_TEST_CONNECTION_STRING: "Server=mariadb;Port=3306;Database=bank_test;User=bank_user;Password=ci_pw;"
+  script:
+    - dotnet test Backend/Bank.Tests
+
 pages:
   stage: deploy
   script:

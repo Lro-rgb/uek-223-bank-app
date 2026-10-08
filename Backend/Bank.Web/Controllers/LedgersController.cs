@@ -19,10 +19,13 @@ public class LedgersController(ILedgerRepository ledgerRepository) : ControllerB
 
     [HttpGet("{id:int}")]
     [Authorize(Roles = "Administrators,Users")]
-    public Ledger? Get(int id)
+    public IActionResult Get(int id)
     {
+        // Vorher wurde aus null ein 204 ohne Inhalt (externer Test, F5).
         var ledger = ledgerRepository.SelectOne(id);
-        return ledger;
+        return ledger is null
+            ? NotFound(new { message = "Konto nicht gefunden." })
+            : Ok(ledger);
     }
 
     [HttpPut("{id:int}")]

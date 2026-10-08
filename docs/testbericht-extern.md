@@ -285,3 +285,20 @@ curl -m 15 http://localhost:5000/api/v1/Ledgers -H "Authorization: Bearer $TOKEN
 4. F5 bis F8 sind Kosmetik und API-Hygiene.
 
 Die Transaktionssicherheit selbst — Transaktion, `SELECT … FOR UPDATE`, feste Sperr-Reihenfolge, Retry und Historie in derselben Transaktion — mussten wir nicht anfassen. Die hält, was ihr im README beschreibt.
+
+---
+
+## Umsetzung durch Matti & Luis
+
+Alle acht Befunde sind in Issue #19 behoben, die Transaktionslogik blieb unverändert.
+
+| Nr. | Umsetzung | Nachweis |
+|---|---|---|
+| F1 | `LedgerRepository` liest `name` nullable, die Retry-Schleife wiederholt nur noch bei 1213/1205 (wie beim Buchen) | IT-L1, IT-L2, Konto ohne Namen live geprüft (Antwort in < 100 ms) |
+| F2 | `PUT /Ledgers/{id}` nimmt die ID aus der URL, abweichende ID im Body oder fehlender Name → 400, unbekannte ID → 404 | IT-L4, API live geprüft |
+| F3 | `book()` und `deleteLedger()` brechen ab, solange eine Anfrage läuft | Doppelklick im Browser: genau 1 Buchung |
+| F4 | `canActivate: [AuthGuard]` auf `/ledgers` | Ohne Token Weiterleitung auf `/login` |
+| F5 | `GET /Ledgers/{id}` liefert bei unbekannter ID 404 `{ message }` | IT-L3, API live geprüft |
+| F6 | `InvalidModelStateResponseFactory` gibt auch Bindungsfehler als `{ message }` zurück | `"abc"`, `1e30` und leerer Body → 400 `{ message }` |
+| F7 | `BookingValidator` und Frontend lehnen mehr als 2 Nachkommastellen ab (400) | UT-V4, `0.0000001` → 400, `0.01` → 200 |
+| F8 | Lint-Fehler behoben, CI-Jobs `frontend` (lint, build) und `backend-test` (`dotnet test` mit MariaDB) | Pipeline im MR |

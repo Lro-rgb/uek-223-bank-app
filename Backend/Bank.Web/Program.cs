@@ -4,6 +4,7 @@ using Bank.DbAccess.Data;
 using Bank.DbAccess.Repositories;
 using Bank.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -62,7 +63,11 @@ public static class Program
         builder.Services.AddTransient<ILoginService, LoginService>();
         builder.Services.AddTransient<IBookingRepository, BookingRepository>();
             
-        builder.Services.AddControllers();
+        // Auch Bindungsfehler (z.B. "amount":"abc" oder leerer Body) als { message }, wie alle anderen Fehler der API.
+        // Sonst käme ProblemDetails ohne message, und das Frontend zeigt nur einen Fallback-Text (externer Test, F6).
+        builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+            options.InvalidModelStateResponseFactory = _ =>
+                new BadRequestObjectResult(new { message = "Ungültige Eingabe. Bitte die Werte prüfen." }));
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
