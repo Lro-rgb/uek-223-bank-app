@@ -166,6 +166,7 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 
 - [Manuelle Testfälle (mit Durchführungsprotokoll)](docs/manuelle-testfaelle.md)
 - [Testprotokoll für externe Tester](docs/testprotokoll-extern.md)
+- [Testbericht des externen Teams](docs/testbericht-extern.md) vom 08.10.2026: Befunde F1–F4 behoben (#19), F5–F8 (klein) noch offen
 - [Integrationstests](docs/integrationstests.md)
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
 

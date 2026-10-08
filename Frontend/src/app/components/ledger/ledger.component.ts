@@ -53,6 +53,10 @@ export class LedgerComponent implements OnInit {
     }
 
     public book(): void {
+        // Der Button wird erst nach dem nächsten Rendern gesperrt, ein schneller Doppelklick käme sonst zweimal durch (externer Test, F3).
+        if (this.isSubmitting()) {
+            return;
+        }
         if (this.sourceId === null || this.destinationId === null || this.amount === null) {
             this.showMessage('Bitte Von, Nach und Betrag ausfüllen.', true);
             return;
@@ -89,6 +93,9 @@ export class LedgerComponent implements OnInit {
     }
 
     public deleteLedger(ledger: Ledger): void {
+        if (this.deletingId() !== null) {
+            return;
+        }
         if (!confirm(`Konto "${ledger.name}" wirklich löschen?`)) {
             return;
         }
@@ -109,10 +116,7 @@ export class LedgerComponent implements OnInit {
                 },
                 error: (error: HttpErrorResponse) => {
                     console.error('Delete error', error);
-                    this.showDeleteMessage(
-                        this.toErrorMessage(error, 'Löschen fehlgeschlagen.', 'Keine Berechtigung zum Löschen.'),
-                        true,
-                    );
+                    this.showDeleteMessage(this.toErrorMessage(error, 'Löschen fehlgeschlagen.', 'Keine Berechtigung zum Löschen.'), true);
                 },
             });
     }
