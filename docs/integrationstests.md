@@ -4,6 +4,13 @@ Die Tests liegen in `Backend/Bank.Tests` und laufen gegen die Test-DB `bank_test
 
 Ausführen: `dotnet test Backend/Bank.Tests`
 
+## Protokoll
+
+| Datum | Stand | Ergebnis |
+|---|---|---|
+| 07.10.2026 | `main` 293e8fb, frische DB | 20/20 bestanden |
+| 08.10.2026 | `main` 0f7a6ed | 20/20 bestanden |
+
 ## Konto löschen (Zusatz-Feature 1)
 
 Getestet wird `LedgerRepository.Delete()` in `LedgerDeleteTests.cs`. Der Controller setzt das Ergebnis in den HTTP-Status um (`Success` → 204, `HasBalance`/`HasBookings` → 409, `LedgerNotFound` → 404).
