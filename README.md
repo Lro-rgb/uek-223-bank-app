@@ -4,6 +4,16 @@ Gruppe: Matti & Luis
 
 Bank-App aus dem ÜK 223 (Backend, Frontend und Kursunterlagen). Doku und Fortschritt geben wir im LearningView ab.
 
+## Fallbeispiel
+
+Eine Bank verwaltet Konten (Ledgers) mit einem Saldo. Mehrere Benutzer:innen arbeiten gleichzeitig mit der App und verschieben Geld zwischen den Konten. Weil sie dieselben Konten gleichzeitig lesen und ändern, kann ohne Schutz Geld verschwinden, doppelt entstehen oder ein Saldo unter 0 fallen. Die App muss deshalb mehrbenutzerfähig sein.
+
+- **Pflicht-Feature Buchen:** Ein Betrag wird von einem Konto auf ein anderes übertragen. Der Saldo darf nie unter 0 fallen, eine fehlgeschlagene Transaktion wird neu gestartet.
+- **Zusatz-Feature 1, Konto löschen:** Ein Konto kann gelöscht werden, aber nur mit Saldo 0 und ohne Buchungen. Auch eine gleichzeitige Buchung darf dabei kein Geld verschwinden lassen.
+- **Zusatz-Feature 2, Buchungshistorie:** Pro Konto werden alle Buchungen angezeigt. Jede erfolgreiche Buchung erscheint genau einmal, abgelehnte gar nicht.
+
+Die Probleme bei gleichzeitigem Zugriff und unsere Lösungen stehen unter [Analyse Mehrbenutzeranforderungen](#analyse-mehrbenutzeranforderungen).
+
 ## Aufbau
 
 Eine Anfrage läuft immer gleich: Angular-Frontend → REST-API mit JWT → Controller → Repository → MariaDB. Die Transaktionen (Buchen, Konto löschen) liegen in den Repositories.
@@ -27,8 +37,7 @@ Eine Anfrage läuft immer gleich: Angular-Frontend → REST-API mit JWT → Cont
    ```
    Server=localhost;Port=3306;Database=bank;User=bank_user;Password=<MARIADB_PASSWORD>;
    ```
-   In `Bank.Web` zusätzlich einen eigenen `PrivateKey` setzen (mind. 32 Zeichen).
-4. Alles Weitere zu Backend und Frontend steht in den READMEs der jeweiligen Ordner.
+   Der `PrivateKey` (JWT) aus `appsettings.sample.json` funktioniert so, wie er ist, und muss für die lokale Entwicklung nicht geändert werden.
 
 `.env` und `appsettings.json` sind im `.gitignore` und werden nicht committet.
 
@@ -57,7 +66,26 @@ Backend und Frontend laufen je in einem eigenen Terminal.
 
 Tests: `dotnet test Backend/Bank.Tests`. Dafür muss die DB laufen, Bank.Web nicht. Details in den [Integrationstests](docs/integrationstests.md).
 
-Login: `admin` (Rolle Administrators) und `testuser` (Rolle Users), die Passwörter stehen in `Backend/Bank.DbAccess/DatabaseSeeder.cs`.
+### Benutzer
+
+Die App hat keine Registrierung. Beim ersten Start von `Bank.Web` legt der Seeder (`Backend/Bank.DbAccess/DatabaseSeeder.cs`) zwei Test-User und vier Konten an:
+
+| Benutzername | Passwort | Rolle | Darf |
+|---|---|---|---|
+| `admin` | `adminpass` | Administrators | Konten sehen, buchen, Konten löschen |
+| `testuser` | `testuserpass` | Users | Konten sehen, buchen |
+
+Das sind lokale Testdaten, keine echten Zugangsdaten. Anmelden unter `http://localhost:4200/login`.
+
+**Weiteren User erstellen:** In `DatabaseSeeder.SeedUsers()` einen Eintrag nach dem Muster der bestehenden ergänzen (Passwort wird mit `PasswordHelper.HashAndSaltPassword()` gehasht, Rolle `Roles.Administrators` oder `Roles.Users`). Weil der Seeder nur in leere Tabellen schreibt, danach die DB neu aufbauen (`docker compose down -v`, `docker compose up -d`) und `Bank.Web` neu starten.
+
+## Funktionen
+
+- **Buchen (Pflicht):** als `admin` und als `testuser`. Konto „Von“, Konto „Nach“ und Betrag wählen. Zu wenig Saldo gibt 409 mit Meldung, Betrag ≤ 0 oder gleiche Konten 400.
+- **Konto löschen (Zusatz-Feature 1):** nur als `admin`, nur bei Saldo 0 und ohne Buchungen, sonst 409 mit Meldung. Zum Ausprobieren: „Testkonto leer“ auf frischer DB.
+- **Buchungshistorie (Zusatz-Feature 2):** unter „Buchungshistorie“ ein Konto im Dropdown wählen. Die Liste zeigt die neueste Buchung zuoberst und aktualisiert sich nach jeder Buchung.
+
+**Bekannte Einschränkungen:** Es gibt keinen Logout. `testuser` sieht die Löschen-Buttons und bekommt beim Klick 403 („Keine Berechtigung zum Löschen.“).
 
 ## Analyse Mehrbenutzeranforderungen
 
@@ -101,9 +129,21 @@ Wir sperren beide Konten mit `SELECT ... FOR UPDATE` (kleinere ID zuerst) und nu
 
 Serializable (so wie in den Kursunterlagen) wäre auch sicher, sperrt aber schon beim normalen Lesen. Wenn zwei User dasselbe Konto lesen und danach schreiben wollen, gibt es bei gleichzeitigen Buchungen auf dasselbe Konto häufig einen Deadlock, und die Retry-Schleife muss oft neu starten.
 
+### Begriffe aus der Theorie
+
+| Begriff | Bedeutung | Wo es bei uns auftreten könnte | Wie wir es verhindern |
+|---|---|---|---|
+| **Lost Update** | Zwei Transaktionen lesen denselben Wert und schreiben beide zurück, die erste Änderung geht verloren. | Buchen: A und B lesen beide den Saldo 100 der Quelle (siehe [Probleme](#probleme)). | `SELECT ... FOR UPDATE`: B muss warten, bis A committet hat, und liest dann den neuen Saldo (Massnahme 2). |
+| **Dirty Read** | Eine Transaktion liest Daten, die eine andere noch nicht committet hat. Wird diese zurückgerollt, hat man etwas gelesen, das es nie gab. | B liest den Saldo der Quelle, nachdem A ihn schon reduziert, aber noch nicht committet hat. Bricht A ab, rechnet B mit einem falschen Saldo. | Isolationslevel Read Committed: Es werden nur committete Daten gelesen. |
+| **Non-Repeatable Read** | Dieselbe Zeile wird in einer Transaktion zweimal gelesen und hat beim zweiten Mal einen anderen Wert, weil eine andere Transaktion dazwischen committet hat. | Buchen: Saldo prüfen und danach schreiben. Ändert jemand den Saldo dazwischen, stimmt die Prüfung nicht mehr. | Die Zeile wird beim ersten Lesen mit `FOR UPDATE` gesperrt, bis zum Commit kann sie niemand ändern. Deshalb reicht Read Committed. |
+| **Phantom Read** | Eine Abfrage über mehrere Zeilen liefert beim zweiten Mal zusätzliche oder fehlende Zeilen, weil eine andere Transaktion Zeilen eingefügt oder gelöscht hat. | Konto löschen: Wir zählen die Buchungen des Kontos (`COUNT(*)`). Fügt eine parallele Buchung danach einen Eintrag hinzu, würde ein Konto mit Buchung gelöscht. | Buchen sperrt dasselbe Konto mit `FOR UPDATE`. Solange `Delete()` die Sperre hält, kann für dieses Konto keine neue Buchung entstehen. `GetHistory()` prüft zuerst mit einem eigenen `SELECT`, ob das Konto existiert, und liest danach die Liste. Wird das Konto dazwischen gelöscht, ist die Liste leer, weil ein Konto mit Buchungen nicht gelöscht werden kann. Es entsteht also kein falsches Ergebnis. |
+| **Deadlock** | Zwei Transaktionen warten gegenseitig auf eine Sperre der anderen. Die DB bricht eine davon ab (Fehler 1213). Wartet eine Transaktion zu lange auf eine Sperre, bricht die DB sie mit einem Lock-Wait-Timeout ab (Fehler 1205). | A bucht 1 → 2, B gleichzeitig 2 → 1. | Konten immer in derselben Reihenfolge sperren (kleinere ID zuerst) und bei 1213 oder 1205 die ganze Transaktion bis zu 3-mal neu starten (Massnahme 3). |
+
+Die Isolationslevel verhindern laut Standard: Read Uncommitted nichts, Read Committed Dirty Reads, Repeatable Read zusätzlich Non-Repeatable Reads, Serializable alle drei. Wir kombinieren Read Committed mit gezielten Sperren (`FOR UPDATE`) auf genau den Zeilen, die wir ändern. Das ist für unsere Fälle so sicher wie Serializable, blockiert aber weniger.
+
 ### Zusatz-Features und Transaktionssicherheit
 
-**Buchungshistorie (Zusatz-Feature 2):** Die Historie wird nur gelesen. Ein Eintrag entsteht ausschliesslich in der Buchungs-Transaktion (Massnahme 4). Eine zurückgerollte oder abgelehnte Buchung hinterlässt deshalb keinen Eintrag.
+**Buchungshistorie (Zusatz-Feature 2):** Die Historie wird nur gelesen. Ein Eintrag entsteht ausschliesslich in der Buchungs-Transaktion (Massnahme 4). Eine zurückgerollte oder abgelehnte Buchung hinterlässt deshalb keinen Eintrag. Wo implementiert: `BookingRepository.GetHistory()`, `GET /api/v1/Bookings?ledgerId=X` für Administrators und Users (404 bei unbekanntem Konto, 400 bei fehlender oder ungültiger `ledgerId`). Test: [Integrationstests IT-H1 bis IT-H5](docs/integrationstests.md), Lasttest d) und d2), TF-09.
 
 **Konto löschen (Zusatz-Feature 1):**
 
@@ -124,7 +164,8 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 
 ## Tests
 
-- [Manuelle Testfälle](docs/manuelle-testfaelle.md)
+- [Manuelle Testfälle (mit Durchführungsprotokoll)](docs/manuelle-testfaelle.md)
+- [Testprotokoll für externe Tester](docs/testprotokoll-extern.md)
 - [Integrationstests](docs/integrationstests.md)
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
 
