@@ -11,6 +11,9 @@ public class LedgerRepository(IOptions<DatabaseSettings> databaseSettings, ILogg
     // Anzahl Versuche bei Deadlock (1213) oder Lock-Wait-Timeout (1205), wie in BookingRepository.Book().
     public const int MaxDeleteAttempts = 3;
 
+    // Anzahl Versuche beim Lesen der Konten, danach geht der Fehler an den Aufrufer.
+    public const int MaxReadAttempts = 3;
+
     private readonly DatabaseSettings _databaseSettings = databaseSettings.Value;
 
     public void Book(decimal amount, Ledger from, Ledger to)
@@ -42,119 +45,101 @@ public class LedgerRepository(IOptions<DatabaseSettings> databaseSettings, ILogg
 
     public IEnumerable<Ledger> GetAllLedgers()
     {
-        var allLedgers = new List<Ledger>();
-
         const string query = $"SELECT id, name, balance FROM {Ledger.CollectionName} ORDER BY name";
-        bool worked;
-        do
+
+        return ReadWithRetry((conn, transaction) =>
         {
-            worked = true;
-            using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
-            conn.Open();
-            using var transaction = conn.BeginTransaction(IsolationLevel.Serializable);
-            try
+            // Pro Versuch eine neue Liste, sonst stünden Konten nach einem Retry doppelt drin.
+            var allLedgers = new List<Ledger>();
+            using var cmd = new MySqlCommand(query, conn, transaction);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
             {
-                using var cmd = new MySqlCommand(query, conn, transaction);
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    var id = reader.GetInt32(reader.GetOrdinal("id"));
-                    var name = reader.GetString(reader.GetOrdinal("name"));
-                    var balance = reader.GetDecimal(reader.GetOrdinal("balance"));
-
-                    allLedgers.Add(new Ledger { Id = id, Name = name, Balance = balance });
-                }
+                allLedgers.Add(ReadLedger(reader));
             }
-            catch (Exception ex)
-            {
-                // Attempt to roll back the transaction.
-                try
-                {
-                    transaction.Rollback();
-                    if (ex.GetType() != typeof(Exception))
-                        worked = false;
-                }
-                catch (Exception ex2)
-                {
-                    // Handle any errors that may have occurred on the server that would cause the rollback to fail.
-                    if (ex2.GetType() != typeof(Exception))
-                        worked = false;
-                }
-            }
-        } while (!worked);
 
-        return allLedgers;
+            return allLedgers;
+        });
     }
-    
+
     public Ledger? SelectOne(int id)
     {
-        Ledger? retLedger = null;
-        bool worked;
-
-        do
-        {
-            worked = true;
-            using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
-            conn.Open();
-            using var transaction = conn.BeginTransaction(IsolationLevel.Serializable);
-            try
-            {
-                retLedger = SelectOne(id, conn, transaction);
-            }
-            catch (Exception ex)
-            {
-                // Attempt to roll back the transaction.
-                try
-                {
-                    transaction.Rollback();
-                    if (ex.GetType() != typeof(Exception))
-                        worked = false;
-                }
-                catch (Exception ex2)
-                {
-                    // Handle any errors that may have occurred on the server that would cause the rollback to fail.
-                    if (ex2.GetType() != typeof(Exception))
-                        worked = false;
-                }
-            }
-        } while (!worked);
-
-        return retLedger;
+        return ReadWithRetry((conn, transaction) => SelectOne(id, conn, transaction));
     }
 
-    public Ledger SelectOne(int id, MySqlConnection conn, MySqlTransaction? transaction)
+    public Ledger? SelectOne(int id, MySqlConnection conn, MySqlTransaction? transaction)
     {
         const string query = $"SELECT id, name, balance FROM {Ledger.CollectionName} WHERE id=@Id";
 
         using var cmd = new MySqlCommand(query, conn, transaction);
         cmd.Parameters.AddWithValue("@Id", id);
         using var reader = cmd.ExecuteReader();
-        if (!reader.Read())
-            throw new Exception($"No Ledger with id {id}");
-
-        var ordId = reader.GetInt32(reader.GetOrdinal("id"));
-        var ordName = reader.GetString(reader.GetOrdinal("name"));
-        var ordBalance = reader.GetDecimal(reader.GetOrdinal("balance"));
-
-        return new Ledger { Id = ordId, Name = ordName, Balance = ordBalance };
+        return reader.Read() ? ReadLedger(reader) : null;
     }
 
+    // Lesen mit Retry wie beim Buchen: Nur Deadlock (1213) und Lock-Wait-Timeout (1205) werden wiederholt, alle anderen
+    // Fehler gehen an den Aufrufer. Vorher startete die Schleife bei jedem Fehler neu, ein Konto mit name = NULL hat
+    // GET /Ledgers deshalb endlos hängen lassen (externer Test, F1).
+    private T ReadWithRetry<T>(Func<MySqlConnection, MySqlTransaction, T> read)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
+                conn.Open();
+                using var transaction = conn.BeginTransaction(IsolationLevel.Serializable);
+                var result = read(conn, transaction);
+                transaction.Commit();
+                return result;
+            }
+            catch (MySqlException ex) when (IsTransient(ex) && attempt < MaxReadAttempts)
+            {
+                logger.LogWarning("Lesen der Konten Versuch {Attempt}/{MaxAttempts} fehlgeschlagen ({ErrorCode}).",
+                    attempt, MaxReadAttempts, ex.ErrorCode);
+            }
+        }
+    }
+
+    // Ledger.Name ist nullable, GetString würde bei NULL eine Exception werfen (wie in BookingRepository.GetHistory()).
+    private static Ledger ReadLedger(MySqlDataReader reader)
+    {
+        var nameOrdinal = reader.GetOrdinal("name");
+        return new Ledger
+        {
+            Id = reader.GetInt32(reader.GetOrdinal("id")),
+            Name = reader.IsDBNull(nameOrdinal) ? null : reader.GetString(nameOrdinal),
+            Balance = reader.GetDecimal(reader.GetOrdinal("balance")),
+        };
+    }
+
+    private static bool IsTransient(MySqlException ex) =>
+        ex.ErrorCode is MySqlErrorCode.LockDeadlock or MySqlErrorCode.LockWaitTimeout;
+
     public void Update(Ledger ledger, MySqlConnection conn, MySqlTransaction? transaction)
+    {
+        ExecuteUpdate(ledger, conn, transaction);
+    }
+
+    // false, wenn es kein Konto mit dieser ID gibt (PUT liefert dann 404).
+    public bool Update(Ledger ledger)
+    {
+        using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
+        conn.Open();
+        return ExecuteUpdate(ledger, conn, null) > 0;
+    }
+
+    // Gibt die Anzahl gefundener Zeilen zurück. MySqlConnector zählt standardmässig gefundene statt geänderte Zeilen
+    // (UseAffectedRows=false), ein Update ohne Änderung ergibt also auch 1.
+    private static int ExecuteUpdate(Ledger ledger, MySqlConnection conn, MySqlTransaction? transaction)
     {
         const string query = $"UPDATE {Ledger.CollectionName} SET name=@Name, balance=@Balance WHERE id=@Id";
         using var cmd = new MySqlCommand(query, conn, transaction);
         cmd.Parameters.AddWithValue("@Name", ledger.Name);
         cmd.Parameters.AddWithValue("@Balance", ledger.Balance);
         cmd.Parameters.AddWithValue("@Id", ledger.Id);
-        
-        cmd.ExecuteNonQuery();
-    }
 
-    public void Update(Ledger ledger)
-    {
-        using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
-        conn.Open();
-        Update(ledger, conn, null);
+        return cmd.ExecuteNonQuery();
     }
     
     public decimal? GetBalance(int ledgerId, MySqlConnection conn, MySqlTransaction transaction)

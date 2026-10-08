@@ -7,5 +7,6 @@ public enum BookingResult
     SameLedger,
     LedgerNotFound,
     InsufficientFunds,
-    RetriesExhausted
+    RetriesExhausted,
+    TooManyDecimals
 }

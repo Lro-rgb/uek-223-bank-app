@@ -7,6 +7,7 @@ export const routes: Routes = [
     {
         path: 'ledgers',
         component: LedgerComponent,
+        canActivate: [AuthGuard],
     },
     {
         path: 'login',

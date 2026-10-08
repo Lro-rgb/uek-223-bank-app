@@ -12,6 +12,12 @@ public static class BookingValidator
             return BookingResult.InvalidAmount;
         }
 
+        // Beträge unter einem Rappen ergäben Saldi wie 6932.9999999 (externer Test, F7).
+        if (decimal.Round(amount, 2) != amount)
+        {
+            return BookingResult.TooManyDecimals;
+        }
+
         if (sourceLedgerId == destinationLedgerId)
         {
             return BookingResult.SameLedger;

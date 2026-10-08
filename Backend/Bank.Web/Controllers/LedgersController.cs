@@ -19,17 +19,34 @@ public class LedgersController(ILedgerRepository ledgerRepository) : ControllerB
 
     [HttpGet("{id:int}")]
     [Authorize(Roles = "Administrators,Users")]
-    public Ledger? Get(int id)
+    public IActionResult Get(int id)
     {
+        // Vorher wurde aus null ein 204 ohne Inhalt (externer Test, F5).
         var ledger = ledgerRepository.SelectOne(id);
-        return ledger;
+        return ledger is null
+            ? NotFound(new { message = "Konto nicht gefunden." })
+            : Ok(ledger);
     }
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Administrators")]
-    public void Put(int id, [FromBody] Ledger ledger)
+    public IActionResult Put(int id, [FromBody] Ledger ledger)
     {
-        ledgerRepository.Update(ledger);
+        // Es gilt die ID aus der URL. Vorher wurde die ID aus dem Body verwendet (externer Test, F2).
+        if (ledger.Id != 0 && ledger.Id != id)
+        {
+            return BadRequest(new { message = "ID in URL und Body stimmen nicht überein." });
+        }
+        // Ohne Name würde name = NULL gespeichert, z.B. bei einem Body nur mit balance (externer Test, F1).
+        if (string.IsNullOrWhiteSpace(ledger.Name))
+        {
+            return BadRequest(new { message = "Name fehlt." });
+        }
+
+        ledger.Id = id;
+        return ledgerRepository.Update(ledger)
+            ? Ok()
+            : NotFound(new { message = "Konto nicht gefunden." });
     }
 
     [HttpDelete("{id:int}")]
