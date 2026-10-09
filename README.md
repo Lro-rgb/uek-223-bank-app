@@ -31,11 +31,11 @@ Eine Anfrage läuft immer gleich: Angular-Frontend → REST-API mit JWT → Cont
 
 ## Setup
 
-1. `.env.sample` nach `.env` kopieren und die Passwörter setzen. `MARIADB_USER` muss `bank_user` bleiben, weil `db-init/01-test-db.sql` diesem User die Rechte auf die Test-Datenbank `bank_test` gibt.
+1. `.env.sample` nach `.env` kopieren und die Passwörter setzen. `MARIADB_USER` muss `bank_user` bleiben, weil `db-init/01-test-db.sql` diesem User die Rechte auf die Test-Datenbank `bank_test` gibt. Läuft auf der Maschine schon eine andere Bank-App (gleicher Container-Name `bank-db` oder Port 3306), in der `.env` `COMPOSE_PROJECT_NAME`, `MARIADB_CONTAINER_NAME` und `MARIADB_PORT` ändern (z.B. `bank232`, `bank232-db`, `3307`).
 2. Datenbank starten: `docker compose up -d`. Beim ersten Start legt `db-init` zusätzlich die Datenbank `bank_test` für die Integrationstests an.
 3. In `Backend/Bank.Web` und `Backend/Bank.Cli` jeweils `appsettings.sample.json` nach `appsettings.json` kopieren und den Connection-String mit den Werten aus der `.env` füllen:
    ```
-   Server=localhost;Port=3306;Database=bank;User=bank_user;Password=<MARIADB_PASSWORD>;
+   Server=localhost;Port=<MARIADB_PORT, Standard 3306>;Database=bank;User=bank_user;Password=<MARIADB_PASSWORD>;
    ```
    Der `PrivateKey` (JWT) aus `appsettings.sample.json` funktioniert so, wie er ist, und muss für die lokale Entwicklung nicht geändert werden.
 
@@ -54,7 +54,7 @@ Der Ordner `Backend/Bank.Web/Migrations` stammt aus der Kursvorlage und wird nic
 
 ## Starten
 
-Voraussetzungen: Docker, .NET 9 SDK und Node 22. Die Befehle laufen im Hauptordner des Repos, nach dem Setup oben.
+Voraussetzungen: Docker mit Compose v2 (`docker compose version` muss funktionieren, unter Linux sonst das Paket `docker-compose-plugin` installieren), .NET 9 SDK und Node 22. Die Befehle laufen im Hauptordner des Repos, nach dem Setup oben.
 
 ```
 docker compose up -d                       # Datenbank
@@ -172,7 +172,7 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 ## Tests
 
 - [Manuelle Testfälle (mit Durchführungsprotokoll)](docs/manuelle-testfaelle.md)
-- [Testprotokoll des externen Tests](docs/testprotokoll-extern.md) (ausgefüllt, 08.10.2026, Team Noel Kohn, Maksym Shepetko, Henry Roesler Schellenberg)
+- [Testprotokoll des externen Tests](docs/testprotokoll-extern.md): ausgefüllt von Henry Roesler Schellenberg (Team Noel Kohn, Maksym Shepetko, Henry Roesler Schellenberg) am 09.10.2026, **13/13 bestanden**
 - [Testbericht des externen Teams](docs/testbericht-extern.md) vom 08.10.2026: alle Befunde F1–F8 behoben (#19)
 - [Integrationstests](docs/integrationstests.md): Die xUnit-Tests in `Backend/Bank.Tests` sind unsere Unit-Tests. UT-V1–V4 laufen ohne DB, alle übrigen (IT-…) als Integrationstests gegen `bank_test`.
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
