@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Bank.DbAccess\Bank.DbAccess.csproj" />
     <ProjectReference Include="..\Bank.Core\Bank.Core.csproj" />
+    <ProjectReference Include="..\Bank.Web\Bank.Web.csproj" />
   </ItemGroup>
 
 </Project>

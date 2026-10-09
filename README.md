@@ -25,7 +25,7 @@ Eine Anfrage läuft immer gleich: Angular-Frontend → REST-API mit JWT → Cont
 | Datenzugriff | `Backend/Bank.DbAccess` | `AppDbContext` (Tabellen), `DatabaseSeeder` (Testdaten und User), Repositories: `BookingRepository` (Buchen, Historie), `LedgerRepository` (Konten, Löschen), `UserRepository` |
 | REST-API | `Backend/Bank.Web` | Controller für Login, Ledgers, Bookings und BankInfo unter `/api/v1`, JWT-Login (`LoginService`), Rollen `Administrators` und `Users` |
 | Konsole | `Backend/Bank.Cli` | Konsolen-Übung aus dem Kurs (Multiuser-Problem ohne und mit Transaktionen) |
-| Tests | `Backend/Bank.Tests` | xUnit-Tests: Unit-Tests ohne DB (UT-V1–V4) und Integrationstests gegen `bank_test`, siehe [Integrationstests](docs/integrationstests.md) |
+| Tests | `Backend/Bank.Tests`, `Frontend/e2e` | xUnit-Tests: Unit-Tests ohne DB (UT-V1–V4, UT-C1–C3) und Integrationstests gegen `bank_test`, siehe [Integrationstests](docs/integrationstests.md). Playwright-E2E-Tests im Browser, siehe [E2E-Tests](docs/e2e-tests.md) |
 | Lasttest | `Backend/Bank.Tests.Loadtest.Cli` | NBomber-Lasttest über die API, siehe [Lasttest Buchungen](#lasttest-buchungen-nbomber) |
 | Frontend | `Frontend/src/app` | Angular: `login` (Anmeldung), `ledger` (Kontenliste, Buchen, Löschen), `booking-history` (Historie pro Konto). Services `auth`, `ledger`, `booking` für die API, `authInterceptor` hängt das JWT an jede Anfrage. |
 
@@ -66,7 +66,7 @@ npm start                                  # Frontend auf http://localhost:4200
 
 Backend und Frontend laufen je in einem eigenen Terminal.
 
-Tests: `dotnet test Backend/Bank.Tests`. Dafür muss die DB laufen, Bank.Web nicht. Details in den [Integrationstests](docs/integrationstests.md).
+Tests: `dotnet test Backend/Bank.Tests`. Dafür muss die DB laufen, Bank.Web nicht. Details in den [Integrationstests](docs/integrationstests.md). E2E-Tests im Browser (DB, Backend und Frontend müssen laufen): siehe [E2E-Tests](docs/e2e-tests.md).
 
 ### Benutzer
 
@@ -126,7 +126,7 @@ Läuft das ohne Transaktion, kann zwischen jedem Schritt ein anderer User diesel
 | Retry-Schleife bei Deadlock (1213) oder Lock-Wait-Timeout (1205), feste Sperr-Reihenfolge | Abgebrochene Transaktionen gehen verloren | `BookingRepository.Book()`: Schleife mit `MaxAttempts = 3`, `IsTransient()` erkennt 1213/1205, fehlgeschlagene Versuche (1213/1205) werden als Warnung geloggt, das Aufgeben als Fehler, danach 409. Sperr-Reihenfolge in `TryBook()` (`Math.Min` vor `Math.Max`) | IT-B6 (2000 parallele Buchungen: Total gleich, kein Saldo unter 0, Erfolge = Einträge, `RetriesExhausted` wird nur gezählt), NBomber Prüfung c) keine 5xx, TF-08 |
 | Historien-Eintrag (Tabelle `Bookings`) in derselben Transaktion wie die beiden Saldo-Updates. Keine Buchung ohne Eintrag, kein Eintrag ohne Buchung, auch bei Retry und Rollback. | Historie und Kontostände passen nicht zusammen (z.B. Eintrag einer zurückgerollten Buchung) | `BookingRepository.InsertBooking()` innerhalb von `TryBook()` vor dem `Commit()`, Anzeige über `BookingRepository.GetHistory()` (Zusatz-Feature 2) | IT-B4, IT-B6 (Anzahl Erfolge = Anzahl Einträge), IT-H1, IT-H2, NBomber Prüfung d) und d2), TF-09 |
 
-Dazu ausserhalb der Buchung: `PUT /api/v1/Ledgers/{id}` schreibt den Saldo nie (`LedgerRepository.UpdateName()`), deshalb kann eine gleichzeitige Buchung nicht überschrieben werden (Lost Update über `PUT`, siehe [Probleme](#probleme)). Test: IT-L5.
+Dazu ausserhalb der Buchung: `PUT /api/v1/Ledgers/{id}` schreibt den Saldo nie (`LedgerRepository.UpdateName()`), deshalb kann eine gleichzeitige Buchung nicht überschrieben werden (Lost Update über `PUT`, siehe [Probleme](#probleme)). Test: IT-L5, IT-L6.
 
 ### Isolationslevel für Buchen
 
@@ -140,7 +140,7 @@ Auch beim Lesen der Konten (`GET /api/v1/Ledgers`, `LedgerRepository.ReadWithRet
 
 | Begriff | Bedeutung | Wo es bei uns auftreten könnte | Wie wir es verhindern |
 |---|---|---|---|
-| **Lost Update** | Zwei Transaktionen lesen denselben Wert und schreiben beide zurück, die erste Änderung geht verloren. | Buchen: A und B lesen beide den Saldo 100 der Quelle (siehe [Probleme](#probleme)). Ausserdem ein `PUT` auf ein Konto, während gebucht wird. | `SELECT ... FOR UPDATE`: B muss warten, bis A committet hat, und liest dann den neuen Saldo (Massnahme 2). `PUT` ändert nur den Namen, nie den Saldo (IT-L5). |
+| **Lost Update** | Zwei Transaktionen lesen denselben Wert und schreiben beide zurück, die erste Änderung geht verloren. | Buchen: A und B lesen beide den Saldo 100 der Quelle (siehe [Probleme](#probleme)). Ausserdem ein `PUT` auf ein Konto, während gebucht wird. | `SELECT ... FOR UPDATE`: B muss warten, bis A committet hat, und liest dann den neuen Saldo (Massnahme 2). `PUT` ändert nur den Namen, nie den Saldo (IT-L5, IT-L6). |
 | **Dirty Read** | Eine Transaktion liest Daten, die eine andere noch nicht committet hat. Wird diese zurückgerollt, hat man etwas gelesen, das es nie gab. | B liest den Saldo der Quelle, nachdem A ihn schon reduziert, aber noch nicht committet hat. Bricht A ab, rechnet B mit einem falschen Saldo. | Isolationslevel Read Committed: Es werden nur committete Daten gelesen. |
 | **Non-Repeatable Read** | Dieselbe Zeile wird in einer Transaktion zweimal gelesen und hat beim zweiten Mal einen anderen Wert, weil eine andere Transaktion dazwischen committet hat. | Buchen: Saldo prüfen und danach schreiben. Ändert jemand den Saldo dazwischen, stimmt die Prüfung nicht mehr. | Die Zeile wird beim ersten Lesen mit `FOR UPDATE` gesperrt, bis zum Commit kann sie niemand ändern. Deshalb reicht Read Committed. |
 | **Phantom Read** | Eine Abfrage über mehrere Zeilen liefert beim zweiten Mal zusätzliche oder fehlende Zeilen, weil eine andere Transaktion Zeilen eingefügt oder gelöscht hat. | Konto löschen: Wir zählen die Buchungen des Kontos (`COUNT(*)`). Fügt eine parallele Buchung danach einen Eintrag hinzu, würde ein Konto mit Buchung gelöscht. | Buchen sperrt dasselbe Konto mit `FOR UPDATE`. Solange `Delete()` die Sperre hält, kann für dieses Konto keine neue Buchung entstehen. `GetHistory()` prüft zuerst mit einem eigenen `SELECT`, ob das Konto existiert, und liest danach die Liste. Wird das Konto dazwischen gelöscht, ist die Liste leer, weil ein Konto mit Buchungen nicht gelöscht werden kann. Es entsteht also kein falsches Ergebnis. |
@@ -174,7 +174,8 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 - [Manuelle Testfälle (mit Durchführungsprotokoll)](docs/manuelle-testfaelle.md)
 - [Testprotokoll des externen Tests](docs/testprotokoll-extern.md): ausgefüllt von Henry Roesler Schellenberg (Team Noel Kohn, Maksym Shepetko, Henry Roesler Schellenberg) am 09.10.2026, **13/13 bestanden**
 - [Testbericht des externen Teams](docs/testbericht-extern.md) vom 08.10.2026: alle Befunde F1–F8 behoben (#19)
-- [Integrationstests](docs/integrationstests.md): Die xUnit-Tests in `Backend/Bank.Tests` sind unsere Unit-Tests. UT-V1–V4 laufen ohne DB, alle übrigen (IT-…) als Integrationstests gegen `bank_test`.
+- [Integrationstests](docs/integrationstests.md): Die xUnit-Tests in `Backend/Bank.Tests` sind unsere Unit-Tests. UT-V1–V4 (Eingabeprüfung) und UT-C1–C3 (Controller Konto löschen, mit Fake-Repository) laufen ohne DB, alle übrigen (IT-…) als Integrationstests gegen `bank_test`.
+- [End-to-End-Tests](docs/e2e-tests.md): 10 Playwright-Tests im Browser (Login, Buchen, Historie, Löschen), 12/12 bestanden
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
 
 ### Welche Tests die Transaktionssicherheit prüfen
@@ -187,6 +188,7 @@ Massnahmen 1–4 siehe [Massnahmen](#massnahmen). Wie die Integrationstests gest
 | IT-B5 ohne `FOR UPDATE` | Gegenprobe: `FOR UPDATE` testweise entfernt, der Test wird rot (Saldo -60). Die Sperre ist die Ursache, nicht der Zufall. | 2 |
 | IT-B6 | 20 parallele User × 100 Buchungen zwischen 2 Konten: Total gleich, kein Saldo unter 0, Anzahl Erfolge = Anzahl Einträge. `RetriesExhausted` wird nur gezählt. | 1, 2, 3, 4 |
 | IT-H2 | Abgelehnte Buchung (zu wenig Saldo) hinterlässt keinen Historien-Eintrag. | 4 |
+| IT-L5, IT-L6 | Lost Update über `PUT`: Nach einer Buchung von 30 ändert `PUT` nur den Namen, der Saldo bleibt 70. Ein mitgeschickter veralteter Saldo (100) wird mit 400 abgelehnt. | 2 (Saldo nur über die gesperrte Buchung) |
 | IT-D1–D4 | Konto löschen in einer Transaktion mit `FOR UPDATE`: nur mit Saldo 0 und ohne Buchungen, sonst 409, unbekanntes Konto 404. Kein Geld verschwindet aus dem Total. | Zusatz-Feature 1, wie 1 und 2 |
 | Lasttest a) | Total vorher = Total nachher nach 1500 parallelen Buchungen über die API. | 1, 2 |
 | Lasttest b) | Kein Konto unter 0. | 2 |

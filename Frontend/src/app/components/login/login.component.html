@@ -11,9 +11,9 @@
         </div>
         <button type="submit">Login</button>
     </form>
-    @if (errorMessage) {
+    @if (errorMessage()) {
         <div class="error">
-            {{ errorMessage }}
+            {{ errorMessage() }}
         </div>
     }
 </div>
