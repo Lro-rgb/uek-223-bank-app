@@ -13,6 +13,7 @@ Ausführen: `dotnet test Backend/Bank.Tests`
 | 08.10.2026 | Branch `fix/19-externer-test` (Befunde F1–F8 aus dem [externen Testbericht](testbericht-extern.md)) | 26/26 bestanden |
 | 09.10.2026 | Branch `fix/20-review` (Lost Update über `PUT`, IT-L5, Lesen mit Read Committed) | 27/27 bestanden |
 | 09.10.2026 | Branch `fix/put-saldo-test` (IT-L6: `PUT` mit veraltetem Saldo über den Controller) | 28/28 bestanden |
+| 09.10.2026 | Branch `fix/put-saldo-test` (UT-C1–C3: Controller Konto löschen ohne DB) | 33/33 bestanden |
 
 ## Konten lesen und ändern
 
@@ -74,6 +75,14 @@ Getestet wird `BookingRepository.GetHistory()` in `BookingHistoryTests.cs`. Der 
 | UT-V2 | `Validate_SameLedger_ReturnsSameLedger` | Quelle = Ziel | `SameLedger` (400) |
 | UT-V3 | `Validate_ValidInput_ReturnsSuccess` | Quelle 1, Ziel 2, Betrag 0.01 | `Success` |
 | UT-V4 | `Validate_MoreThanTwoDecimals_ReturnsTooManyDecimals` | Betrag 0.0000001 und 10.005 (externer Test, F7) | `TooManyDecimals` (400 „Der Betrag darf höchstens 2 Nachkommastellen haben.“) |
+
+`LedgersControllerTests.cs` testet `LedgersController.Delete()` (Zusatz-Feature 1) mit einem Fake-Repository, das ein festes Ergebnis liefert. Geprüft wird nur, welcher HTTP-Status und welche Meldung daraus entstehen. Die Transaktion selbst prüfen IT-D1 bis IT-D4.
+
+| Nr. | Test | Eingabe (Ergebnis des Fake-Repositorys) | Erwartetes Ergebnis |
+|---|---|---|---|
+| UT-C1 | `Delete_Success_ReturnsNoContent` | `Success` | 204, `Delete()` mit der ID aus der URL aufgerufen |
+| UT-C2 | `Delete_LedgerNotFound_ReturnsNotFoundWithMessage` | `LedgerNotFound` | 404 „Konto nicht gefunden.“ |
+| UT-C3 | `Delete_Rejected_ReturnsConflictWithMessage` | `HasBalance`, `HasBookings`, `RetriesExhausted` | je 409 mit „Konto hat noch Guthaben.“, „Konto hat Buchungen.“ bzw. der Meldung zu gleichzeitigen Zugriffen |
 
 ## Nachweis Transaktionssicherheit (IT-B5)
 
