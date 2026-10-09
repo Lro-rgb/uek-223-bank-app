@@ -208,30 +208,30 @@ dotnet run              # Buchungen
 dotnet run -- bankinfo  # alter Lasttest auf /bankinfo
 ```
 
-Der HTML-Report landet in `booking_reports/` (nicht im Repo). Ergebnis vom 07.10.2026:
+Der HTML-Report landet in `booking_reports/` (nicht im Repo). Ergebnis vom 09.10.2026:
 
 ```
 Szenario: bookings
 Anfragen total: 1500
 Anfragen ok / fehlgeschlagen: 1500 / 0
-Durchschnittsdauer (ok): 8.88 ms
-Statuscodes: 200: 1409, 409: 91, 400: 0, 404: 0, 5xx: 0, andere: 0
+Durchschnittsdauer (ok): 27.00 ms
+Statuscodes: 200: 1371, 409: 129, 400: 0, 404: 0, 5xx: 0, andere: 0
 
-Total vorher:  10541.00
-Total nachher: 10541.00
+Total vorher:  7249.00
+Total nachher: 7249.00
 
 PASS a) Total vorher = Total nachher
 PASS b) kein Konto unter 0
 PASS c) keine 5xx
-PASS d) neue Booking-IDs (1409) = Anzahl 200er (1409)
+PASS d) neue Booking-IDs (1371) = Anzahl 200er (1371)
 PASS d2) neue Einträge entsprechen genau den 200er-Buchungen (Quelle, Ziel, Betrag)
-     Jede der 1409 erfolgreichen Buchungen hat genau einen Eintrag, und es gibt keinen weiteren.
-     Also hat keine der 91 abgelehnten Buchungen (409) einen Eintrag hinterlassen (Massnahme 4).
+     Jede der 1371 erfolgreichen Buchungen hat genau einen Eintrag, und es gibt keinen weiteren.
+     Also hat keine der 129 abgelehnten Buchungen (409) einen Eintrag hinterlassen (Massnahme 4).
 
 Ergebnis: PASS
 ```
 
-Die 409-Antworten sind keine Fehler im System: Das Backend lehnt die Buchung ab, weil das Quellkonto zu wenig Saldo hat oder weil nach 3 Versuchen bei Deadlock/Lock-Wait-Timeout aufgegeben wurde. Im Bank.Web-Log gab es in diesem Lauf keine Retries (1213/1205), die 91 Conflicts waren also alle „zu wenig Saldo“.
+Die 409-Antworten sind keine Fehler im System: Das Backend lehnt die Buchung ab, weil das Quellkonto zu wenig Saldo hat oder weil nach 3 Versuchen bei Deadlock/Lock-Wait-Timeout aufgegeben wurde. Im Bank.Web-Log gab es in diesem Lauf keine Retries (1213/1205), die 129 Conflicts waren also alle „zu wenig Saldo“.
 
 d) allein zeigt nur, dass gleich viele neue Einträge wie 200er entstanden sind. d2) vergleicht zusätzlich Quelle, Ziel und Betrag jeder 200er-Anfrage mit den neuen Einträgen, damit kein Eintrag einer 409 einen fehlenden Eintrag einer 200 ausgleichen kann.
 

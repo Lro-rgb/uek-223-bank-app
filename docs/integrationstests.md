@@ -11,6 +11,7 @@ Ausführen: `dotnet test Backend/Bank.Tests`
 | 07.10.2026 | `main` 293e8fb, frische DB | 20/20 bestanden |
 | 08.10.2026 | `main` 0f7a6ed | 20/20 bestanden |
 | 08.10.2026 | Branch `fix/19-externer-test` (Befunde F1–F8 aus dem [externen Testbericht](testbericht-extern.md)) | 26/26 bestanden |
+| 09.10.2026 | Branch `fix/20-review` (Lost Update über `PUT`, IT-L5, Lesen mit Read Committed) | 27/27 bestanden |
 
 ## Konten lesen und ändern
 
