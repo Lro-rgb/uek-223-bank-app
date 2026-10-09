@@ -3,7 +3,7 @@
     <ul>
         <li *ngFor="let ledger of ledgers$ | async">
             <strong>{{ ledger.name }}</strong
-            >: {{ ledger.balance | currency }}
+            >: {{ ledger.balance | currency: 'CHF' }}
             <button type="button" (click)="deleteLedger(ledger)" [disabled]="deletingId() === ledger.id">Löschen</button>
         </li>
     </ul>
@@ -22,7 +22,7 @@
             <select id="sourceId" [(ngModel)]="sourceId" name="sourceId" required>
                 <option [ngValue]="null" disabled>Konto wählen</option>
                 <option *ngFor="let ledger of ledgers$ | async" [ngValue]="ledger.id">
-                    {{ ledger.name }} ({{ ledger.balance | currency }})
+                    {{ ledger.name }} ({{ ledger.balance | currency: 'CHF' }})
                 </option>
             </select>
         </div>
@@ -31,7 +31,7 @@
             <select id="destinationId" [(ngModel)]="destinationId" name="destinationId" required>
                 <option [ngValue]="null" disabled>Konto wählen</option>
                 <option *ngFor="let ledger of ledgers$ | async" [ngValue]="ledger.id">
-                    {{ ledger.name }} ({{ ledger.balance | currency }})
+                    {{ ledger.name }} ({{ ledger.balance | currency: 'CHF' }})
                 </option>
             </select>
         </div>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,8 @@ import { Token } from '../../models/token.interface';
 export class LoginComponent {
     public username = '';
     public password = '';
-    public errorMessage = '';
+    // Signal, damit OnPush die Meldung nach der HTTP-Antwort neu zeichnet. Als normales Feld blieb sie unsichtbar (E2E-03).
+    public errorMessage = signal('');
 
     constructor(
         private http: HttpClient,
@@ -35,7 +36,7 @@ export class LoginComponent {
             },
             error: (err) => {
                 console.error('Login failed', err);
-                this.errorMessage = 'Invalid username or password.';
+                this.errorMessage.set('Benutzername oder Passwort falsch.');
             },
         });
     }
