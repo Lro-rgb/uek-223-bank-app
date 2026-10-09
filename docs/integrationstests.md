@@ -14,14 +14,15 @@ Ausführen: `dotnet test Backend/Bank.Tests`
 
 ## Konten lesen und ändern
 
-Getestet wird `LedgerRepository.GetAllLedgers()`, `SelectOne()` und `Update()` in `LedgerReadTests.cs`. Anlass war Befund F1 aus dem [externen Testbericht](testbericht-extern.md): Ein Konto mit `name` = NULL liess `GET /api/v1/Ledgers` endlos hängen, weil die Retry-Schleife bei jedem Fehler neu startete. Jetzt wird nur bei 1213/1205 wiederholt (wie beim Buchen), und der Name wird nullable gelesen. Die Lese-Tests brechen nach 10 Sekunden ab, statt zu hängen.
+Getestet wird `LedgerRepository.GetAllLedgers()`, `SelectOne()` und `UpdateName()` in `LedgerReadTests.cs`. Anlass war Befund F1 aus dem [externen Testbericht](testbericht-extern.md): Ein Konto mit `name` = NULL liess `GET /api/v1/Ledgers` endlos hängen, weil die Retry-Schleife bei jedem Fehler neu startete. Jetzt wird nur bei 1213/1205 wiederholt (wie beim Buchen), und der Name wird nullable gelesen. Die Lese-Tests brechen nach 10 Sekunden ab, statt zu hängen.
 
 | Nr. | Test | Ziel | Eingabe | Erwartetes Ergebnis |
 |---|---|---|---|---|
 | IT-L1 | `GetAllLedgers_LedgerWithoutName_ReturnsLedgerWithNullName` | Ein Konto ohne Namen legt die Kontenliste nicht lahm (F1). | Konto mit 100, Name auf NULL | Antwort innerhalb 10 s, Konto mit `Name` = null und Saldo 100 |
 | IT-L2 | `SelectOne_LedgerWithoutName_ReturnsLedgerWithNullName` | Dasselbe für ein einzelnes Konto (F1). | Konto mit 50, Name auf NULL | Konto mit `Name` = null und Saldo 50 |
 | IT-L3 | `SelectOne_UnknownLedger_ReturnsNull` | Unbekanntes Konto ohne Exception. | ID `int.MaxValue` | `null` |
-| IT-L4 | `Update_UnknownLedger_ReturnsFalse` | `PUT` auf ein unbekanntes Konto wird erkannt (F2). | ID `int.MaxValue` | `false` (Controller: 404 „Konto nicht gefunden.“) |
+| IT-L4 | `UpdateName_UnknownLedger_ReturnsFalse` | `PUT` auf ein unbekanntes Konto wird erkannt (F2). | ID `int.MaxValue` | `false` (Controller: 404 „Konto nicht gefunden.“) |
+| IT-L5 | `UpdateName_AfterParallelBooking_KeepsBookedBalance` | Kein Lost Update über `PUT`: Umbenennen überschreibt keine gleichzeitige Buchung. | Konto mit 100 geladen, dann 30 gebucht, dann Name geändert | Neuer Name, Saldo 70 (nicht 100), Total der beiden Konten 100. Der Controller lehnt einen abweichenden Saldo im Body mit 400 ab. |
 
 ## Konto löschen (Zusatz-Feature 1)
 
