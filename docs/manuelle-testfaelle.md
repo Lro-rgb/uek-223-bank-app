@@ -11,12 +11,12 @@
 | **API-Prüfungen** | TF-03, TF-04 und der API-Teil von TF-07 per `curl`. Saldi, Total und Historie nach jedem Testfall zusätzlich über `GET /api/v1/Ledgers` und `GET /api/v1/Bookings?ledgerId=` geprüft. |
 | **Ergebnis** | **9/9 bestanden**. Total nach allen Tests unverändert 10 774.00 bei 17 Buchungen. |
 
-**Weitere Beobachtungen** (keine Fehler gegen die Anforderungen, nicht behoben):
+**Weitere Beobachtungen** (keine Fehler gegen die Anforderungen). Die ersten drei bleiben bewusst offen (README, Bekannte Einschränkungen), der letzte ist behoben:
 
 - Es gibt keinen Logout-Button. Zum Wechseln zwischen `admin` und `testuser` muss `/login` neu aufgerufen oder der `localStorage` geleert werden.
 - `testuser` sieht die Löschen-Buttons, obwohl nur Administrators löschen dürfen. Das Backend lehnt mit 403 ab (siehe Bruno-Collection).
 - `auth.interceptor.ts` gibt bei jedem Request das JWT mit `console.log` in der Browser-Konsole aus.
-- Nach einer abgelehnten Buchung lädt das Frontend die Konten-Liste nicht neu, ein zweites Fenster zeigt deshalb bis F5 veraltete Saldi (TF-08).
+- Nach einer abgelehnten Buchung lädt das Frontend die Konten-Liste nicht neu, ein zweites Fenster zeigt deshalb bis F5 veraltete Saldi (TF-08). **Behoben in #20:** `book()` lädt die Liste jetzt auch nach einer Ablehnung neu.
 
 ## Anforderungen
 
@@ -24,7 +24,7 @@
 |---|---|
 | A1 | Nur Benutzer:innen in der Rolle „Administrators“ oder „Users“ können alle Ledgers sehen. |
 | A2 | Benutzer:innen in der Rolle „Administrators“ oder „Users“ können buchen. Dabei wird ein Geldbetrag von einem Konto auf ein anderes verschoben. |
-| A3 | Nur Benutzer:innen in der Rolle „Administrators“ können Ledgers direkt verändern (Name, Saldo). Buchen ist davon ausgenommen (siehe A2). |
+| A3 | Nur Benutzer:innen in der Rolle „Administrators“ können Ledgers direkt verändern. Über die API (`PUT`) lässt sich nur der Name ändern, der Saldo ändert sich nur über Buchungen (sonst Lost Update, siehe README Probleme). Buchen ist davon ausgenommen (siehe A2). |
 | A4 | Bei einer Buchung darf der Kontostand nie unter 0 fallen. |
 | A5 | Der Buchungsbetrag muss grösser als 0 sein. |
 | A6 | Jede erfolgreiche Buchung erscheint genau einmal in der Historie, abgelehnte Buchungen gar nicht. |

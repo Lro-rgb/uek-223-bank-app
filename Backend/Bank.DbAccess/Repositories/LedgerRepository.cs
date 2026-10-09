@@ -88,7 +88,9 @@ public class LedgerRepository(IOptions<DatabaseSettings> databaseSettings, ILogg
             {
                 using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
                 conn.Open();
-                using var transaction = conn.BeginTransaction(IsolationLevel.Serializable);
+                // Read Committed reicht: Ein einzelnes SELECT liest einen konsistenten, committeten Stand. Serializable würde
+                // beim Lesen sperren und Buchungen unnötig warten lassen (README, Isolationslevel).
+                using var transaction = conn.BeginTransaction(IsolationLevel.ReadCommitted);
                 var result = read(conn, transaction);
                 transaction.Commit();
                 return result;
@@ -121,12 +123,27 @@ public class LedgerRepository(IOptions<DatabaseSettings> databaseSettings, ILogg
         ExecuteUpdate(ledger, conn, transaction);
     }
 
-    // false, wenn es kein Konto mit dieser ID gibt (PUT liefert dann 404).
+    // Schreibt Name und Saldo absolut, ohne Sperre. Nur noch für die Konsolen-Übung (Book() in Bank.Cli), die API ändert
+    // den Saldo nie direkt (siehe UpdateName()).
     public bool Update(Ledger ledger)
     {
         using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
         conn.Open();
         return ExecuteUpdate(ledger, conn, null) > 0;
+    }
+
+    // Für PUT /api/v1/Ledgers/{id}: ändert nur den Namen. Der Saldo bleibt unberührt, so kann eine gleichzeitige Buchung
+    // nicht überschrieben werden (kein Lost Update). false, wenn es kein Konto mit dieser ID gibt (PUT liefert dann 404).
+    public bool UpdateName(int id, string name)
+    {
+        const string query = $"UPDATE {Ledger.CollectionName} SET name=@Name WHERE id=@Id";
+        using var conn = new MySqlConnection(_databaseSettings.ConnectionString);
+        conn.Open();
+        using var cmd = new MySqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@Name", name);
+        cmd.Parameters.AddWithValue("@Id", id);
+
+        return cmd.ExecuteNonQuery() > 0;
     }
 
     // Gibt die Anzahl gefundener Zeilen zurück. MySqlConnector zählt standardmässig gefundene statt geänderte Zeilen

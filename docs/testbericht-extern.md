@@ -290,6 +290,8 @@ Die Transaktionssicherheit selbst — Transaktion, `SELECT … FOR UPDATE`, fest
 
 ## Umsetzung durch Matti & Luis
 
+Das ausgefüllte [Testprotokoll](testprotokoll-extern.md) fasst die Ergebnisse pro Testfall zusammen.
+
 Alle acht Befunde sind in Issue #19 behoben, die Transaktionslogik blieb unverändert.
 
 | Nr. | Umsetzung | Nachweis |
@@ -310,4 +312,4 @@ Alle acht Befunde sind in Issue #19 behoben, die Transaktionslogik blieb unverä
 | **Datum** | 08.10.2026 |
 | **Teilnehmende** | Luis Rosado, Matti Näf (Team Matti & Luis); Noel Kohn, Maksym Shepetko, Henry Roesler Schellenberg (externes Testteam) |
 | **Ergebnis** | Transaktionssicherheit bestätigt (20/20 Tests, Lasttest PASS, eigene Nebenläufigkeitstests ohne Fehler), 8 Befunde ausserhalb der Transaktionslogik, davon 1 kritisch (F1) |
-| **Entscheid** | Alle Befunde F1–F8 werden umgesetzt (Issue #19, MR !22). Bewusst offen bleiben: kein Logout, `testuser` sieht die Löschen-Buttons (das Backend sperrt mit 403) und das `console.log` mit dem Token. Alle drei sind im README unter „Bekannte Einschränkungen“ dokumentiert. |
+| **Entscheid** | Alle Befunde F1–F8 werden umgesetzt (Issue #19, MR !22). Bewusst offen bleiben: kein Logout, `testuser` sieht die Löschen-Buttons (das Backend sperrt mit 403) und das `console.log` mit dem Token. Alle drei sind im README unter „Bekannte Einschränkungen“ dokumentiert. Nachtrag 09.10.2026 (#20): Die Kontenliste wird nach einer abgelehnten Buchung jetzt neu geladen, und `PUT` ändert nur noch den Namen (kein Lost Update über den Saldo). |

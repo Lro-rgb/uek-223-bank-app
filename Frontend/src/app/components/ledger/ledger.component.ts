@@ -92,6 +92,8 @@ export class LedgerComponent implements OnInit {
                 error: (error: HttpErrorResponse) => {
                     console.error('Booking error', error);
                     this.showMessage(this.toErrorMessage(error), true);
+                    // Auch nach einer Ablehnung neu laden, sonst zeigt die Liste bis F5 veraltete Saldi (TF-08).
+                    this.loadLedgers();
                 },
             });
     }

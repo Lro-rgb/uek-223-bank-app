@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Bank.Tests;
 
 // Integrationstests für das Lesen und Ändern in LedgerRepository gegen die Test-DB bank_test (siehe docs/integrationstests.md,
-// IT-L1 bis IT-L4). Anlass war der externe Test (F1): Ein Konto mit name = NULL liess GET /Ledgers endlos hängen.
+// IT-L1 bis IT-L5). Anlass war der externe Test (F1): Ein Konto mit name = NULL liess GET /Ledgers endlos hängen.
 [Collection(DatabaseCollection.Name)]
 public sealed class LedgerReadTests(DatabaseFixture fixture) : IDisposable
 {
@@ -50,11 +50,36 @@ public sealed class LedgerReadTests(DatabaseFixture fixture) : IDisposable
     }
 
     [Fact]
-    public void Update_UnknownLedger_ReturnsFalse()
+    public void UpdateName_UnknownLedger_ReturnsFalse()
     {
-        var updated = _repository.Update(new Ledger { Id = int.MaxValue, Name = "Gibt es nicht", Balance = 1 });
+        var updated = _repository.UpdateName(int.MaxValue, "Gibt es nicht");
 
         Assert.False(updated);
+    }
+
+    // Lost Update über PUT: Ein Admin hat das Konto mit Saldo 100 geladen, dazwischen wird 30 gebucht, dann speichert er
+    // den neuen Namen. Früher schrieb PUT den alten Saldo 100 zurück und die Buchung ging verloren. UpdateName() ändert
+    // den Saldo nicht, die Buchung bleibt erhalten.
+    [Fact]
+    public void UpdateName_AfterParallelBooking_KeepsBookedBalance()
+    {
+        // Arrange
+        var source = _ledgers.Create(100);
+        var destination = _ledgers.Create(0);
+        var loadedByAdmin = _repository.SelectOne(source);
+        var bookings = new BookingRepository(fixture.DatabaseSettings, NullLogger<BookingRepository>.Instance);
+        Assert.Equal(BookingResult.Success, bookings.Book(source, destination, 30));
+
+        // Act
+        var updated = _repository.UpdateName(source, "Umbenannt");
+
+        // Assert
+        Assert.True(updated);
+        Assert.Equal(100, loadedByAdmin!.Balance);
+        var after = _repository.SelectOne(source);
+        Assert.Equal("Umbenannt", after!.Name);
+        Assert.Equal(70, after.Balance);
+        Assert.Equal(100, _ledgers.Total());
     }
 
     // Vor dem Fix lief das Lesen bei name = NULL endlos. Der Test soll dann rot werden statt hängen zu bleiben.

@@ -1,10 +1,11 @@
 name: bank
 services:
   mariadb:
-    container_name: "bank-db"
+    # Name und Port über die .env änderbar, falls auf der Maschine schon eine andere Bank-App läuft (externer Test, 09.10.2026).
+    container_name: "${MARIADB_CONTAINER_NAME:-bank-db}"
     image: mariadb:11.6.2
     ports:
-      - 3306:3306
+      - "${MARIADB_PORT:-3306}:3306"
     environment:
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_DATABASE=${MARIADB_DATABASE}

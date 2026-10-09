@@ -25,17 +25,17 @@ Eine Anfrage läuft immer gleich: Angular-Frontend → REST-API mit JWT → Cont
 | Datenzugriff | `Backend/Bank.DbAccess` | `AppDbContext` (Tabellen), `DatabaseSeeder` (Testdaten und User), Repositories: `BookingRepository` (Buchen, Historie), `LedgerRepository` (Konten, Löschen), `UserRepository` |
 | REST-API | `Backend/Bank.Web` | Controller für Login, Ledgers, Bookings und BankInfo unter `/api/v1`, JWT-Login (`LoginService`), Rollen `Administrators` und `Users` |
 | Konsole | `Backend/Bank.Cli` | Konsolen-Übung aus dem Kurs (Multiuser-Problem ohne und mit Transaktionen) |
-| Tests | `Backend/Bank.Tests` | Integrationstests gegen `bank_test`, siehe [Integrationstests](docs/integrationstests.md) |
+| Tests | `Backend/Bank.Tests` | xUnit-Tests: Unit-Tests ohne DB (UT-V1–V4) und Integrationstests gegen `bank_test`, siehe [Integrationstests](docs/integrationstests.md) |
 | Lasttest | `Backend/Bank.Tests.Loadtest.Cli` | NBomber-Lasttest über die API, siehe [Lasttest Buchungen](#lasttest-buchungen-nbomber) |
 | Frontend | `Frontend/src/app` | Angular: `login` (Anmeldung), `ledger` (Kontenliste, Buchen, Löschen), `booking-history` (Historie pro Konto). Services `auth`, `ledger`, `booking` für die API, `authInterceptor` hängt das JWT an jede Anfrage. |
 
 ## Setup
 
-1. `.env.sample` nach `.env` kopieren und die Passwörter setzen. `MARIADB_USER` muss `bank_user` bleiben, weil `db-init/01-test-db.sql` diesem User die Rechte auf die Test-Datenbank `bank_test` gibt.
+1. `.env.sample` nach `.env` kopieren und die Passwörter setzen. `MARIADB_USER` muss `bank_user` bleiben, weil `db-init/01-test-db.sql` diesem User die Rechte auf die Test-Datenbank `bank_test` gibt. Läuft auf der Maschine schon eine andere Bank-App (gleicher Container-Name `bank-db` oder Port 3306), in der `.env` `COMPOSE_PROJECT_NAME`, `MARIADB_CONTAINER_NAME` und `MARIADB_PORT` ändern (z.B. `bank232`, `bank232-db`, `3307`).
 2. Datenbank starten: `docker compose up -d`. Beim ersten Start legt `db-init` zusätzlich die Datenbank `bank_test` für die Integrationstests an.
 3. In `Backend/Bank.Web` und `Backend/Bank.Cli` jeweils `appsettings.sample.json` nach `appsettings.json` kopieren und den Connection-String mit den Werten aus der `.env` füllen:
    ```
-   Server=localhost;Port=3306;Database=bank;User=bank_user;Password=<MARIADB_PASSWORD>;
+   Server=localhost;Port=<MARIADB_PORT, Standard 3306>;Database=bank;User=bank_user;Password=<MARIADB_PASSWORD>;
    ```
    Der `PrivateKey` (JWT) aus `appsettings.sample.json` funktioniert so, wie er ist, und muss für die lokale Entwicklung nicht geändert werden.
 
@@ -50,9 +50,11 @@ docker compose up -d
 
 Danach `Bank.Web` neu starten.
 
+Der Ordner `Backend/Bank.Web/Migrations` stammt aus der Kursvorlage und wird nicht verwendet (veraltet, z.B. ohne `CreatedAt` in `Bookings`). Die Tabellen entstehen über `EnsureCreated()`.
+
 ## Starten
 
-Voraussetzungen: Docker, .NET 9 SDK und Node 22. Die Befehle laufen im Hauptordner des Repos, nach dem Setup oben.
+Voraussetzungen: Docker mit Compose v2 (`docker compose version` muss funktionieren, unter Linux sonst das Paket `docker-compose-plugin` installieren), .NET 9 SDK und Node 22. Die Befehle laufen im Hauptordner des Repos, nach dem Setup oben.
 
 ```
 docker compose up -d                       # Datenbank
@@ -72,7 +74,7 @@ Die App hat keine Registrierung. Beim ersten Start von `Bank.Web` legt der Seede
 
 | Benutzername | Passwort | Rolle | Darf |
 |---|---|---|---|
-| `admin` | `adminpass` | Administrators | Konten sehen, buchen, Konten löschen |
+| `admin` | `adminpass` | Administrators | Konten sehen, buchen, Konten umbenennen (nur API, `PUT`), Konten löschen |
 | `testuser` | `testuserpass` | Users | Konten sehen, buchen |
 
 Das sind lokale Testdaten, keine echten Zugangsdaten. Anmelden unter `http://localhost:4200/login`.
@@ -112,6 +114,7 @@ Läuft das ohne Transaktion, kann zwischen jedem Schritt ein anderer User diesel
 | Lost Update | zwischen 1 und 4 (bzw. 5 und 7) | Quelle hat 100. A und B lesen beide 100. A bucht 30 weg und schreibt 70, B bucht 20 weg und schreibt 80. Am Schluss steht 80, die 30 von A sind weg, beim Ziel aber angekommen. Geld ist entstanden. | Lesen und Schreiben in einer Transaktion, Zeile beim Lesen sperren (`SELECT ... FOR UPDATE` oder Isolationslevel Serializable) |
 | Saldo unter 0 | zwischen 2 und 4 | Quelle hat 50. A und B prüfen beide „50 ≥ 40“ und buchen je 40 weg, relativ geschrieben (`UPDATE ... SET balance = balance - 40`). Saldo -30, obwohl jede Prüfung für sich korrekt war. Mit absolutem Schreiben (`SET balance = 10`) wäre es stattdessen ein Lost Update. | Prüfung innerhalb derselben Transaktion auf der gesperrten Zeile, nicht vorher und nicht auf alten Daten |
 | Halbe Buchung | zwischen 4 und 7 | A hat Quelle schon geändert, dann bricht das Programm oder die Verbindung ab. Ziel bekommt nichts, das Geld ist verschwunden. B sieht in der Zwischenzeit ein falsches Total. | Alle Schritte in einer Transaktion: entweder Commit von beidem oder Rollback |
+| Lost Update über `PUT /api/v1/Ledgers/{id}` | ausserhalb der Buchung | Admin lädt Konto X mit Saldo 100 und ändert den Namen. Dazwischen bucht B 30 von X weg (Saldo 70). Speichert der Admin danach Name und Saldo 100 absolut zurück, ist die Buchung verloren und 30 sind entstanden. | `PUT` ändert nur den Namen (`UPDATE ... SET name`), der Saldo ändert sich nur über Buchungen. Weicht ein mitgeschickter Saldo vom aktuellen ab, gibt es 400. |
 | Deadlock / abgebrochene Transaktion | 1 und 5 | Entsteht erst durch das Sperren, also durch die Lösung der anderen Probleme. A bucht Konto 1 → 2, B gleichzeitig 2 → 1. A sperrt 1, B sperrt 2, beide warten aufeinander. Die DB bricht eine Transaktion ab. | Konten immer in fester Reihenfolge sperren (kleinere ID zuerst) und abgebrochene Transaktion in einer Schleife neu starten (Retry) |
 
 ### Massnahmen
@@ -123,17 +126,21 @@ Läuft das ohne Transaktion, kann zwischen jedem Schritt ein anderer User diesel
 | Retry-Schleife bei Deadlock (1213) oder Lock-Wait-Timeout (1205), feste Sperr-Reihenfolge | Abgebrochene Transaktionen gehen verloren | `BookingRepository.Book()`: Schleife mit `MaxAttempts = 3`, `IsTransient()` erkennt 1213/1205, fehlgeschlagene Versuche (1213/1205) werden als Warnung geloggt, das Aufgeben als Fehler, danach 409. Sperr-Reihenfolge in `TryBook()` (`Math.Min` vor `Math.Max`) | IT-B6 (2000 parallele Buchungen: Total gleich, kein Saldo unter 0, Erfolge = Einträge, `RetriesExhausted` wird nur gezählt), NBomber Prüfung c) keine 5xx, TF-08 |
 | Historien-Eintrag (Tabelle `Bookings`) in derselben Transaktion wie die beiden Saldo-Updates. Keine Buchung ohne Eintrag, kein Eintrag ohne Buchung, auch bei Retry und Rollback. | Historie und Kontostände passen nicht zusammen (z.B. Eintrag einer zurückgerollten Buchung) | `BookingRepository.InsertBooking()` innerhalb von `TryBook()` vor dem `Commit()`, Anzeige über `BookingRepository.GetHistory()` (Zusatz-Feature 2) | IT-B4, IT-B6 (Anzahl Erfolge = Anzahl Einträge), IT-H1, IT-H2, NBomber Prüfung d) und d2), TF-09 |
 
+Dazu ausserhalb der Buchung: `PUT /api/v1/Ledgers/{id}` schreibt den Saldo nie (`LedgerRepository.UpdateName()`), deshalb kann eine gleichzeitige Buchung nicht überschrieben werden (Lost Update über `PUT`, siehe [Probleme](#probleme)). Test: IT-L5.
+
 ### Isolationslevel für Buchen
 
 Wir sperren beide Konten mit `SELECT ... FOR UPDATE` (kleinere ID zuerst) und nutzen dafür Read Committed, das wir beim Start der Transaktion explizit setzen (MariaDB-Default ist Repeatable Read). Die Sperre sorgt dafür, dass niemand anders das Konto zwischen Lesen und Schreiben ändert, und durch die feste Reihenfolge gibt es kaum Deadlocks.
 
 Serializable (so wie in den Kursunterlagen) wäre auch sicher, sperrt aber schon beim normalen Lesen. Wenn zwei User dasselbe Konto lesen und danach schreiben wollen, gibt es bei gleichzeitigen Buchungen auf dasselbe Konto häufig einen Deadlock, und die Retry-Schleife muss oft neu starten.
 
+Auch beim Lesen der Konten (`GET /api/v1/Ledgers`, `LedgerRepository.ReadWithRetry()`) nutzen wir Read Committed: Ein einzelnes `SELECT` liest einen konsistenten, committeten Stand. Serializable würde dabei Lesesperren setzen und gleichzeitige Buchungen warten lassen.
+
 ### Begriffe aus der Theorie
 
 | Begriff | Bedeutung | Wo es bei uns auftreten könnte | Wie wir es verhindern |
 |---|---|---|---|
-| **Lost Update** | Zwei Transaktionen lesen denselben Wert und schreiben beide zurück, die erste Änderung geht verloren. | Buchen: A und B lesen beide den Saldo 100 der Quelle (siehe [Probleme](#probleme)). | `SELECT ... FOR UPDATE`: B muss warten, bis A committet hat, und liest dann den neuen Saldo (Massnahme 2). |
+| **Lost Update** | Zwei Transaktionen lesen denselben Wert und schreiben beide zurück, die erste Änderung geht verloren. | Buchen: A und B lesen beide den Saldo 100 der Quelle (siehe [Probleme](#probleme)). Ausserdem ein `PUT` auf ein Konto, während gebucht wird. | `SELECT ... FOR UPDATE`: B muss warten, bis A committet hat, und liest dann den neuen Saldo (Massnahme 2). `PUT` ändert nur den Namen, nie den Saldo (IT-L5). |
 | **Dirty Read** | Eine Transaktion liest Daten, die eine andere noch nicht committet hat. Wird diese zurückgerollt, hat man etwas gelesen, das es nie gab. | B liest den Saldo der Quelle, nachdem A ihn schon reduziert, aber noch nicht committet hat. Bricht A ab, rechnet B mit einem falschen Saldo. | Isolationslevel Read Committed: Es werden nur committete Daten gelesen. |
 | **Non-Repeatable Read** | Dieselbe Zeile wird in einer Transaktion zweimal gelesen und hat beim zweiten Mal einen anderen Wert, weil eine andere Transaktion dazwischen committet hat. | Buchen: Saldo prüfen und danach schreiben. Ändert jemand den Saldo dazwischen, stimmt die Prüfung nicht mehr. | Die Zeile wird beim ersten Lesen mit `FOR UPDATE` gesperrt, bis zum Commit kann sie niemand ändern. Deshalb reicht Read Committed. |
 | **Phantom Read** | Eine Abfrage über mehrere Zeilen liefert beim zweiten Mal zusätzliche oder fehlende Zeilen, weil eine andere Transaktion Zeilen eingefügt oder gelöscht hat. | Konto löschen: Wir zählen die Buchungen des Kontos (`COUNT(*)`). Fügt eine parallele Buchung danach einen Eintrag hinzu, würde ein Konto mit Buchung gelöscht. | Buchen sperrt dasselbe Konto mit `FOR UPDATE`. Solange `Delete()` die Sperre hält, kann für dieses Konto keine neue Buchung entstehen. `GetHistory()` prüft zuerst mit einem eigenen `SELECT`, ob das Konto existiert, und liest danach die Liste. Wird das Konto dazwischen gelöscht, ist die Liste leer, weil ein Konto mit Buchungen nicht gelöscht werden kann. Es entsteht also kein falsches Ergebnis. |
@@ -165,9 +172,9 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 ## Tests
 
 - [Manuelle Testfälle (mit Durchführungsprotokoll)](docs/manuelle-testfaelle.md)
-- [Testprotokoll für externe Tester](docs/testprotokoll-extern.md)
+- [Testprotokoll des externen Tests](docs/testprotokoll-extern.md): ausgefüllt von Henry Roesler Schellenberg (Team Noel Kohn, Maksym Shepetko, Henry Roesler Schellenberg) am 09.10.2026, **13/13 bestanden**
 - [Testbericht des externen Teams](docs/testbericht-extern.md) vom 08.10.2026: alle Befunde F1–F8 behoben (#19)
-- [Integrationstests](docs/integrationstests.md)
+- [Integrationstests](docs/integrationstests.md): Die xUnit-Tests in `Backend/Bank.Tests` sind unsere Unit-Tests. UT-V1–V4 laufen ohne DB, alle übrigen (IT-…) als Integrationstests gegen `bank_test`.
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
 
 ### Welche Tests die Transaktionssicherheit prüfen
@@ -201,30 +208,30 @@ dotnet run              # Buchungen
 dotnet run -- bankinfo  # alter Lasttest auf /bankinfo
 ```
 
-Der HTML-Report landet in `booking_reports/` (nicht im Repo). Ergebnis vom 07.10.2026:
+Der HTML-Report landet in `booking_reports/` (nicht im Repo). Ergebnis vom 09.10.2026:
 
 ```
 Szenario: bookings
 Anfragen total: 1500
 Anfragen ok / fehlgeschlagen: 1500 / 0
-Durchschnittsdauer (ok): 8.88 ms
-Statuscodes: 200: 1409, 409: 91, 400: 0, 404: 0, 5xx: 0, andere: 0
+Durchschnittsdauer (ok): 27.00 ms
+Statuscodes: 200: 1371, 409: 129, 400: 0, 404: 0, 5xx: 0, andere: 0
 
-Total vorher:  10541.00
-Total nachher: 10541.00
+Total vorher:  7249.00
+Total nachher: 7249.00
 
 PASS a) Total vorher = Total nachher
 PASS b) kein Konto unter 0
 PASS c) keine 5xx
-PASS d) neue Booking-IDs (1409) = Anzahl 200er (1409)
+PASS d) neue Booking-IDs (1371) = Anzahl 200er (1371)
 PASS d2) neue Einträge entsprechen genau den 200er-Buchungen (Quelle, Ziel, Betrag)
-     Jede der 1409 erfolgreichen Buchungen hat genau einen Eintrag, und es gibt keinen weiteren.
-     Also hat keine der 91 abgelehnten Buchungen (409) einen Eintrag hinterlassen (Massnahme 4).
+     Jede der 1371 erfolgreichen Buchungen hat genau einen Eintrag, und es gibt keinen weiteren.
+     Also hat keine der 129 abgelehnten Buchungen (409) einen Eintrag hinterlassen (Massnahme 4).
 
 Ergebnis: PASS
 ```
 
-Die 409-Antworten sind keine Fehler im System: Das Backend lehnt die Buchung ab, weil das Quellkonto zu wenig Saldo hat oder weil nach 3 Versuchen bei Deadlock/Lock-Wait-Timeout aufgegeben wurde. Im Bank.Web-Log gab es in diesem Lauf keine Retries (1213/1205), die 91 Conflicts waren also alle „zu wenig Saldo“.
+Die 409-Antworten sind keine Fehler im System: Das Backend lehnt die Buchung ab, weil das Quellkonto zu wenig Saldo hat oder weil nach 3 Versuchen bei Deadlock/Lock-Wait-Timeout aufgegeben wurde. Im Bank.Web-Log gab es in diesem Lauf keine Retries (1213/1205), die 129 Conflicts waren also alle „zu wenig Saldo“.
 
 d) allein zeigt nur, dass gleich viele neue Einträge wie 200er entstanden sind. d2) vergleicht zusätzlich Quelle, Ziel und Betrag jeder 200er-Anfrage mit den neuen Einträgen, damit kein Eintrag einer 409 einen fehlenden Eintrag einer 200 ausgleichen kann.
 
