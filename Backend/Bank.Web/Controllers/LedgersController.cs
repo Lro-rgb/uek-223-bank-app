@@ -1,5 +1,6 @@
 ﻿using Bank.Core.Models;
 using Bank.DbAccess.Repositories;
+using Bank.Web.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,21 +31,35 @@ public class LedgersController(ILedgerRepository ledgerRepository) : ControllerB
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Administrators")]
-    public IActionResult Put(int id, [FromBody] Ledger ledger)
+    public IActionResult Put(int id, [FromBody] LedgerUpdateDto dto)
     {
         // Es gilt die ID aus der URL. Vorher wurde die ID aus dem Body verwendet (externer Test, F2).
-        if (ledger.Id != 0 && ledger.Id != id)
+        if (dto.Id is not null and not 0 && dto.Id != id)
         {
             return BadRequest(new { message = "ID in URL und Body stimmen nicht überein." });
         }
         // Ohne Name würde name = NULL gespeichert, z.B. bei einem Body nur mit balance (externer Test, F1).
-        if (string.IsNullOrWhiteSpace(ledger.Name))
+        if (string.IsNullOrWhiteSpace(dto.Name))
         {
             return BadRequest(new { message = "Name fehlt." });
         }
 
-        ledger.Id = id;
-        return ledgerRepository.Update(ledger)
+        // Der Saldo wird nur über Buchungen geändert. Ein absolut geschriebener Saldo würde eine gleichzeitige Buchung
+        // überschreiben (Lost Update, README Probleme). Ein mitgeschickter Saldo muss deshalb dem aktuellen entsprechen.
+        if (dto.Balance is not null)
+        {
+            var current = ledgerRepository.SelectOne(id);
+            if (current is null)
+            {
+                return NotFound(new { message = "Konto nicht gefunden." });
+            }
+            if (current.Balance != dto.Balance)
+            {
+                return BadRequest(new { message = "Der Saldo kann nur über Buchungen geändert werden." });
+            }
+        }
+
+        return ledgerRepository.UpdateName(id, dto.Name)
             ? Ok()
             : NotFound(new { message = "Konto nicht gefunden." });
     }
