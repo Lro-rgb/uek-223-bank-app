@@ -25,7 +25,7 @@ Eine Anfrage läuft immer gleich: Angular-Frontend → REST-API mit JWT → Cont
 | Datenzugriff | `Backend/Bank.DbAccess` | `AppDbContext` (Tabellen), `DatabaseSeeder` (Testdaten und User), Repositories: `BookingRepository` (Buchen, Historie), `LedgerRepository` (Konten, Löschen), `UserRepository` |
 | REST-API | `Backend/Bank.Web` | Controller für Login, Ledgers, Bookings und BankInfo unter `/api/v1`, JWT-Login (`LoginService`), Rollen `Administrators` und `Users` |
 | Konsole | `Backend/Bank.Cli` | Konsolen-Übung aus dem Kurs (Multiuser-Problem ohne und mit Transaktionen) |
-| Tests | `Backend/Bank.Tests` | xUnit-Tests: Unit-Tests ohne DB (UT-V1–V4) und Integrationstests gegen `bank_test`, siehe [Integrationstests](docs/integrationstests.md) |
+| Tests | `Backend/Bank.Tests`, `Frontend/e2e` | xUnit-Tests: Unit-Tests ohne DB (UT-V1–V4, UT-C1–C3) und Integrationstests gegen `bank_test`, siehe [Integrationstests](docs/integrationstests.md). Playwright-E2E-Tests im Browser, siehe [E2E-Tests](docs/e2e-tests.md) |
 | Lasttest | `Backend/Bank.Tests.Loadtest.Cli` | NBomber-Lasttest über die API, siehe [Lasttest Buchungen](#lasttest-buchungen-nbomber) |
 | Frontend | `Frontend/src/app` | Angular: `login` (Anmeldung), `ledger` (Kontenliste, Buchen, Löschen), `booking-history` (Historie pro Konto). Services `auth`, `ledger`, `booking` für die API, `authInterceptor` hängt das JWT an jede Anfrage. |
 
@@ -66,7 +66,7 @@ npm start                                  # Frontend auf http://localhost:4200
 
 Backend und Frontend laufen je in einem eigenen Terminal.
 
-Tests: `dotnet test Backend/Bank.Tests`. Dafür muss die DB laufen, Bank.Web nicht. Details in den [Integrationstests](docs/integrationstests.md).
+Tests: `dotnet test Backend/Bank.Tests`. Dafür muss die DB laufen, Bank.Web nicht. Details in den [Integrationstests](docs/integrationstests.md). E2E-Tests im Browser (DB, Backend und Frontend müssen laufen): siehe [E2E-Tests](docs/e2e-tests.md).
 
 ### Benutzer
 
@@ -174,7 +174,8 @@ Wo implementiert: `LedgerRepository.Delete()` (eine Transaktion, Read Committed,
 - [Manuelle Testfälle (mit Durchführungsprotokoll)](docs/manuelle-testfaelle.md)
 - [Testprotokoll des externen Tests](docs/testprotokoll-extern.md): ausgefüllt von Henry Roesler Schellenberg (Team Noel Kohn, Maksym Shepetko, Henry Roesler Schellenberg) am 09.10.2026, **13/13 bestanden**
 - [Testbericht des externen Teams](docs/testbericht-extern.md) vom 08.10.2026: alle Befunde F1–F8 behoben (#19)
-- [Integrationstests](docs/integrationstests.md): Die xUnit-Tests in `Backend/Bank.Tests` sind unsere Unit-Tests. UT-V1–V4 laufen ohne DB, alle übrigen (IT-…) als Integrationstests gegen `bank_test`.
+- [Integrationstests](docs/integrationstests.md): Die xUnit-Tests in `Backend/Bank.Tests` sind unsere Unit-Tests. UT-V1–V4 (Eingabeprüfung) und UT-C1–C3 (Controller Konto löschen, mit Fake-Repository) laufen ohne DB, alle übrigen (IT-…) als Integrationstests gegen `bank_test`.
+- [End-to-End-Tests](docs/e2e-tests.md): 10 Playwright-Tests im Browser (Login, Buchen, Historie, Löschen), 12/12 bestanden
 - [Bruno-Collection](https://gitlab.ict-learnfactory.ch/ict-learnfactory/223/durchfuehrungen/223-ae-ims-24/gruppe-matti-luis-bruno) (API-Tests, eigenes Projekt)
 
 ### Welche Tests die Transaktionssicherheit prüfen
