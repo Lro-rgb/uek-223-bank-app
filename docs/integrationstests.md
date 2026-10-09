@@ -12,10 +12,11 @@ Ausführen: `dotnet test Backend/Bank.Tests`
 | 08.10.2026 | `main` 0f7a6ed | 20/20 bestanden |
 | 08.10.2026 | Branch `fix/19-externer-test` (Befunde F1–F8 aus dem [externen Testbericht](testbericht-extern.md)) | 26/26 bestanden |
 | 09.10.2026 | Branch `fix/20-review` (Lost Update über `PUT`, IT-L5, Lesen mit Read Committed) | 27/27 bestanden |
+| 09.10.2026 | Branch `fix/put-saldo-test` (IT-L6: `PUT` mit veraltetem Saldo über den Controller) | 28/28 bestanden |
 
 ## Konten lesen und ändern
 
-Getestet wird `LedgerRepository.GetAllLedgers()`, `SelectOne()` und `UpdateName()` in `LedgerReadTests.cs`. Anlass war Befund F1 aus dem [externen Testbericht](testbericht-extern.md): Ein Konto mit `name` = NULL liess `GET /api/v1/Ledgers` endlos hängen, weil die Retry-Schleife bei jedem Fehler neu startete. Jetzt wird nur bei 1213/1205 wiederholt (wie beim Buchen), und der Name wird nullable gelesen. Die Lese-Tests brechen nach 10 Sekunden ab, statt zu hängen.
+Getestet wird `LedgerRepository.GetAllLedgers()`, `SelectOne()` und `UpdateName()` sowie `LedgersController.Put()` in `LedgerReadTests.cs`. Anlass war Befund F1 aus dem [externen Testbericht](testbericht-extern.md): Ein Konto mit `name` = NULL liess `GET /api/v1/Ledgers` endlos hängen, weil die Retry-Schleife bei jedem Fehler neu startete. Jetzt wird nur bei 1213/1205 wiederholt (wie beim Buchen), und der Name wird nullable gelesen. Die Lese-Tests brechen nach 10 Sekunden ab, statt zu hängen.
 
 | Nr. | Test | Ziel | Eingabe | Erwartetes Ergebnis |
 |---|---|---|---|---|
@@ -23,7 +24,8 @@ Getestet wird `LedgerRepository.GetAllLedgers()`, `SelectOne()` und `UpdateName(
 | IT-L2 | `SelectOne_LedgerWithoutName_ReturnsLedgerWithNullName` | Dasselbe für ein einzelnes Konto (F1). | Konto mit 50, Name auf NULL | Konto mit `Name` = null und Saldo 50 |
 | IT-L3 | `SelectOne_UnknownLedger_ReturnsNull` | Unbekanntes Konto ohne Exception. | ID `int.MaxValue` | `null` |
 | IT-L4 | `UpdateName_UnknownLedger_ReturnsFalse` | `PUT` auf ein unbekanntes Konto wird erkannt (F2). | ID `int.MaxValue` | `false` (Controller: 404 „Konto nicht gefunden.“) |
-| IT-L5 | `UpdateName_AfterParallelBooking_KeepsBookedBalance` | Kein Lost Update über `PUT`: Umbenennen überschreibt keine gleichzeitige Buchung. | Konto mit 100 geladen, dann 30 gebucht, dann Name geändert | Neuer Name, Saldo 70 (nicht 100), Total der beiden Konten 100. Der Controller lehnt einen abweichenden Saldo im Body mit 400 ab. |
+| IT-L5 | `UpdateName_AfterParallelBooking_KeepsBookedBalance` | Kein Lost Update über `PUT`: Umbenennen überschreibt keine gleichzeitige Buchung. | Konto mit 100 geladen, dann 30 gebucht, dann Name geändert | Neuer Name, Saldo 70 (nicht 100), Total der beiden Konten 100 |
+| IT-L6 | `Put_WithOutdatedBalance_IsRejectedAndNothingChanges` | `PUT` mit veraltetem Saldo im Body wird abgelehnt, statt die Buchung zu überschreiben. | Konto mit 100 geladen, dann 30 gebucht, dann `PUT` mit neuem Namen und altem Saldo 100, danach `PUT` nur mit Namen | Erster `PUT` 400, Name und Saldo 70 unverändert. Zweiter `PUT` 200, neuer Name, Saldo weiter 70, Total 100 |
 
 ## Konto löschen (Zusatz-Feature 1)
 

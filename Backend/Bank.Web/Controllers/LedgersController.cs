@@ -55,7 +55,7 @@ public class LedgersController(ILedgerRepository ledgerRepository) : ControllerB
             }
             if (current.Balance != dto.Balance)
             {
-                return BadRequest(new { message = "Der Saldo kann nur über Buchungen geändert werden." });
+                return BadRequest(new { message = "Der Saldo kann nur über Buchungen geändert werden. Saldo weglassen oder den aktuellen Saldo mitschicken." });
             }
         }
 
